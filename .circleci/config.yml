@@ -1,0 +1,39 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: node:20.10.0
+    resource_class: large
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore pnpm Package Cache
+          keys:
+            - pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
+            - pnpm-packages-
+      - run:
+          name: Install pnpm package manager
+          command: |
+            corepack enable
+            corepack prepare pnpm@latest-8 --activate
+      - run:
+          name: Install Dependencies
+          command: pnpm install
+      - save_cache:
+          name: Save pnpm Package Cache
+          key: pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
+          paths:
+            - ~/.pnpm-store
+      - run:
+          name: Run Tests
+          command: pnpm run test:unit
+
+workflows:
+  build_test:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only:
+                - master
