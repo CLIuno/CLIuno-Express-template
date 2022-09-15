@@ -37,13 +37,13 @@ app.use('/api/votes', votesRouter);
 
 // custom 404
 app.use((req, res, next) => {
-    res.status(404).send("Page not found 404!!!!!");
+    res.status(404).send("Page not found 404!!!!");
 });
 
 // custom error handler
 app.use((err, req, res, next) => {
     console.error(err.stack)
-    res.status(500).send('its the Server fault 500! ');
+    res.status(500).send('its the Server fault 500!');
 });
 
 app.disable('x-powered-by');
