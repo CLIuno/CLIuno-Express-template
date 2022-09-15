@@ -37,7 +37,7 @@ app.use('/api/votes', votesRouter);
 
 // custom 404
 app.use((req, res, next) => {
-    res.status(404).send("Page not found 404!!!!");
+    res.status(404).send("Page not found 404!");
 });
 
 // custom error handler
