@@ -13,5 +13,8 @@
     "helmet": "^5.1.0",
     "morgan": "~1.9.1",
     "node-sass-middleware": "^1.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
   }
 }
