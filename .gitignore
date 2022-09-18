@@ -5,8 +5,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-.git
-.github
+.git/
+.github/
 # Runtime data
 pids
 *.pid
