@@ -5,8 +5,21 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const sassMiddleware = require('node-sass-middleware');
 const helmet = require('helmet');
+const sqlite3 = require("sqlite3").verbose();
 app.use(helmet());
+
+// Environment variables
+require("reflect-metadata");
 require("dotenv").config();
+
+// Database
+const databasePath = path.join(__dirname, "database", "myDatabase.db");
+const db = new sqlite3.Database(databasePath, (err) => {
+    if (err) {
+        console.error(err.message);
+    }
+    console.log("Connected to database.");
+});
 
 // Routers
 const indexRouter = require('./routes/index');
