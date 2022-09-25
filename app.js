@@ -5,21 +5,13 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const sassMiddleware = require('node-sass-middleware');
 const helmet = require('helmet');
-const sqlite3 = require("sqlite3").verbose();
 app.use(helmet());
 
 // Environment variables
+require("./config/db");
 require("reflect-metadata");
 require("dotenv").config();
 
-// Database
-const databasePath = path.join(__dirname, "database", "myDatabase.db");
-const db = new sqlite3.Database(databasePath, (err) => {
-    if (err) {
-        console.error(err.message);
-    }
-    console.log("Connected to database.");
-});
 
 // Routers
 const indexRouter = require('./routes/index');
@@ -56,7 +48,7 @@ app.use((req, res, next) => {
 
 // custom error handler
 app.use((err, req, res, next) => {
-    console.error(err.stack)
+    console.error(err.stack);
     res.status(500).send('its the Server fault 500!');
 });
 
