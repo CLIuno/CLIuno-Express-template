@@ -6,6 +6,7 @@ const logger = require('morgan');
 const sassMiddleware = require('node-sass-middleware');
 const helmet = require('helmet');
 app.use(helmet());
+require("dotenv").config();
 
 // Routers
 const indexRouter = require('./routes/index');
