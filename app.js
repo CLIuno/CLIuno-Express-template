@@ -7,19 +7,10 @@ const sassMiddleware = require('node-sass-middleware');
 const helmet = require('helmet');
 app.use(helmet());
 
-// Environment variables
+// configs
 require("./config/db");
 require("reflect-metadata");
 require("dotenv").config();
-
-
-// Routers
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
-const authRouter = require('./routes/auth');
-const postsRouter = require('./routes/posts');
-const ranksRouter = require('./routes/ranks');
-const votesRouter = require('./routes/votes');
 
 // view engine setup
 app.use(logger('dev'));
@@ -34,6 +25,15 @@ app.use(sassMiddleware({
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// define routers
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const authRouter = require('./routes/auth');
+const postsRouter = require('./routes/posts');
+const ranksRouter = require('./routes/ranks');
+const votesRouter = require('./routes/votes');
+
+// routes
 app.use('/', indexRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
