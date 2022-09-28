@@ -26,16 +26,16 @@ app.use(sassMiddleware({
 app.use(express.static(path.join(__dirname, 'public')));
 
 // define routers
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
-const authRouter = require('./routes/auth');
-const postsRouter = require('./routes/posts');
-const ranksRouter = require('./routes/ranks');
-const votesRouter = require('./routes/votes');
+const indexRouter = require('./src/routes/index');
+const usersRouter = require('./src/routes/api/users');
+const postsRouter = require('./src/routes/api/posts');
+const ranksRouter = require('./src/routes/api/ranks');
+const votesRouter = require('./src/routes/api/votes');
+const authRouter = require('./src/routes/auth');
 
 // routes
 app.use('/', indexRouter);
-app.use('/api/auth', authRouter);
+app.use('/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/posts', postsRouter);
 app.use('/api/ranks', ranksRouter);
@@ -49,7 +49,7 @@ app.use((req, res, next) => {
 // custom error handler
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).send('its the Server fault 500!');
+    res.status(500).send('it\'s the Server fault 500!');
 });
 
 app.disable('x-powered-by');
