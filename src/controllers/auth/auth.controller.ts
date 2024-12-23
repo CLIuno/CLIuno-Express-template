@@ -118,9 +118,10 @@ export const AuthController = {
   //   TODO: Implement the verifyEmail function
   verifyEmail: async (req: Request, res: Response) => {
     try {
+      const { user_id, token } = req.body
       // Validate if user exists
       const user = await myDataSource.getRepository(User).findOneBy({
-        id: req.body.user_id
+        id: user_id
       })
 
       if (!user) {
@@ -129,7 +130,7 @@ export const AuthController = {
 
       // Check if the token is already blacklisted
       const blacklistedToken = await myDataSource.getRepository(BlacklistedToken).findOne({
-        where: { token: req.body.token }
+        where: { token: token }
       })
       if (blacklistedToken) {
         return res.status(401).json({ message: 'Token has already been invalidated' })
@@ -137,7 +138,7 @@ export const AuthController = {
 
       // Add the token to the blacklist
       const newBlacklistedToken = new BlacklistedToken()
-      newBlacklistedToken.token = req.body.token
+      newBlacklistedToken.token = token
       newBlacklistedToken.invalidatedAt = new Date()
       await myDataSource.getRepository(BlacklistedToken).save(newBlacklistedToken)
 

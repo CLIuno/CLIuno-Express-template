@@ -26,14 +26,14 @@ router.post('/send-verify-email', AuthController.sendVerifyEmail)
 
 router.post('/verify-email', AuthController.verifyEmail)
 
-router.post('/check-token', AuthController.checkToken)
+router.post('/check-token', ensureAuthenticated, AuthController.checkToken)
 
 router.post('/refresh-token', AuthController.refreshToken)
 
 // OTP routes
 router.post('/otp/verify', OTPController.otpVerify)
 
-router.post('/otp/disable', OTPController.otpDisable)
+router.post('/otp/disable', ensureAuthenticated, OTPController.otpDisable)
 
 router.post('/otp/validate', OTPController.otpValidate)
 

@@ -111,7 +111,7 @@ You will get more features if you buy the full version and you can use it for co
 | Status             | Endpoint Description    | Method | Path                             |
 | ------------------ | ----------------------- | ------ | -------------------------------- |
 | :white_check_mark: | Login                   | POST   | `/api/v1/auth/login`             |
-| [ ]                | Register                | POST   | `/api/v1/auth/register`          |
+| :white_check_mark: | Register                | POST   | `/api/v1/auth/register`          |
 | [ ]                | Logout                  | POST   | `/api/v1/auth/logout`            |
 | :white_check_mark: | Reset Password          | POST   | `/api/v1/auth/reset-password`    |
 | :white_check_mark: | Forgot Password         | POST   | `/api/v1/auth/forgot-password`   |

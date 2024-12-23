@@ -10,7 +10,7 @@ const schema = Joi.object({
     .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
     .required(),
   password: Joi.string().min(8).max(32),
-  repeat_password: Joi.ref('password')
+  password_confirmation: Joi.ref('password')
 })
 
 export async function ValidateRegister(req: Request) {

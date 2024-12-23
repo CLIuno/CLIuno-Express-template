@@ -10,6 +10,7 @@ import logThisError from '@/helpers/error-logger'
 import generateToken from '@/helpers/generate-token'
 import { ValidateChangePassword } from '@/validators/auth/change-password.validator'
 import { ValidateResetPassword } from '@/validators/auth/reset-password.validator'
+import { emailValidate } from '@/helpers/email-validator'
 
 const saltRounds = 10
 dotenv.config()
@@ -17,23 +18,24 @@ dotenv.config()
 export const ResetPasswordController = {
   forgotPassword: async (req: Request, res: Response) => {
     try {
-      const { email } = req.body
+      const { usernameOrEmail } = req.body
       // Ensure the request body is defined
-      if (!req.body || !email) {
-        return res.status(400).json({ message: 'Email is required' })
+      if (!req.body || !usernameOrEmail) {
+        return res.status(400).json({ message: 'Email or Username  is required' })
       }
 
       // Validate if user exists
-      const user = await myDataSource.getRepository(User).findOneBy({
-        email
-      })
+      const isEmail = emailValidate(usernameOrEmail)
+      const user = await myDataSource
+        .getRepository(User)
+        .findOneBy(isEmail ? { email: usernameOrEmail } : { username: usernameOrEmail })
 
       if (!user) {
-        return res.status(404).json({ message: 'User not found' })
+        return res.status(401).json({ error: 'Invalid username/email or password' })
       }
 
       generateToken().then((token) => {
-        sendEmail.resetPassword(email, token, user.id)
+        sendEmail.resetPassword(user.email, token, user.id)
       })
 
       return res.status(200).json({ message: 'Email sent successfully' })
