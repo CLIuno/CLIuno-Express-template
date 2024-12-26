@@ -40,7 +40,7 @@ export const UserController = {
 
     try {
       // Verify and decode the token
-      const decoded = jwt.verify(token, process.env.SECRET_KEY as Secret, {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as Secret, {
         ignoreExpiration: true
       }) as any
 

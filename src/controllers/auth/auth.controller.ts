@@ -11,7 +11,8 @@ import generateToken from '@/helpers/generate-token'
 
 dotenv.config()
 
-const jwtSecret = process.env.SECRET_KEY
+const jwtSecret = process.env.JWT_SECRET_KEY
+const refreshJwtSecret = process.env.REFRESH_JWT_SECRET_KEY
 
 export const AuthController = {
   logout: async (req: Request, res: Response) => {
@@ -77,20 +78,23 @@ export const AuthController = {
       return res.status(401).json({ message: 'Token has already been invalidated' })
     }
 
-    if (!jwtSecret) {
-      throw new Error('JWT Secret is not defined')
+    if (!jwtSecret || !refreshJwtSecret) {
+      throw new Error('JWT Secret or Refresh JWT Secret is not defined')
     }
 
     // Verify if the token is valid
-    jwt.verify(token as any, jwtSecret, (err: any, decoded: any) => {
+    jwt.verify(token as any, refreshJwtSecret, (err: any, decoded: any) => {
       if (err) {
         return res.status(401).json({ message: 'Invalid token' })
       }
 
       // Generate a new token
       const newToken = jwt.sign({ email: decoded.email }, jwtSecret, { expiresIn: '1h' })
+      const newRefreshToken = jwt.sign({ email: decoded.email }, refreshJwtSecret, {
+        expiresIn: '7d'
+      })
 
-      return res.status(200).json({ token: newToken })
+      return res.status(200).json({ token: newToken, refreshToken: newRefreshToken })
     })
   },
   sendVerifyEmail: async (req: Request, res: Response) => {

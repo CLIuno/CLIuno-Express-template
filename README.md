@@ -112,13 +112,13 @@ You will get more features if you buy the full version and you can use it for co
 | ------------------ | ----------------------- | ------ | -------------------------------- |
 | :white_check_mark: | Login                   | POST   | `/api/v1/auth/login`             |
 | :white_check_mark: | Register                | POST   | `/api/v1/auth/register`          |
-| [ ]                | Logout                  | POST   | `/api/v1/auth/logout`            |
+| :white_check_mark: | Logout                  | POST   | `/api/v1/auth/logout`            |
 | :white_check_mark: | Reset Password          | POST   | `/api/v1/auth/reset-password`    |
 | :white_check_mark: | Forgot Password         | POST   | `/api/v1/auth/forgot-password`   |
 | :white_check_mark: | Change Password         | POST   | `/api/v1/auth/change-password`   |
 | :white_check_mark: | Send Verification Email | POST   | `/api/v1/auth/send-verify-email` |
 | :white_check_mark: | Verify Email            | POST   | `/api/v1/auth/verify-email`      |
-| [ ]                | Check Token             | POST   | `/api/v1/auth/check-token`       |
+| :white_check_mark: | Check Token             | POST   | `/api/v1/auth/check-token`       |
 | [ ]                | Refresh Token           | POST   | `/api/v1/auth/refresh-token`     |
 | :white_check_mark: | Verify OTP              | POST   | `/api/v1/auth/otp/verify`        |
 | :white_check_mark: | Disable OTP             | POST   | `/api/v1/auth/otp/disable`       |

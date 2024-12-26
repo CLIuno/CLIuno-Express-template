@@ -35,9 +35,9 @@ router.post('/otp/verify', OTPController.otpVerify)
 
 router.post('/otp/disable', ensureAuthenticated, OTPController.otpDisable)
 
-router.post('/otp/validate', OTPController.otpValidate)
+router.post('/otp/validate', ensureAuthenticated, OTPController.otpValidate)
 
-router.post('/otp/generate', OTPController.otpGenerate)
+router.post('/otp/generate', ensureAuthenticated, OTPController.otpGenerate)
 
 // Handle invalid request for the original path
 router.get('/', (req, res) => {

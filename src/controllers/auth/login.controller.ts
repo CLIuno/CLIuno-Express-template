@@ -10,7 +10,8 @@ import logThisError from '@/helpers/error-logger'
 
 dotenv.config()
 
-const jwtSecret = process.env.SECRET_KEY
+const jwtSecret = process.env.JWT_SECRET_KEY
+const refreshJwtSecret = process.env.REFRESH_JWT_SECRET_KEY
 
 export default async function LoginController(req: Request, res: Response) {
   try {
@@ -40,19 +41,27 @@ export default async function LoginController(req: Request, res: Response) {
       return res.status(401).json({ error: 'Wrong username/email or password' })
     }
 
-    if (!jwtSecret) {
-      logThisError('JWT Secret is not defined')
+    if (!jwtSecret || !refreshJwtSecret) {
+      logThisError('JWT Secret or Refresh JWT Secret is not defined')
       return res.status(500).json({ error: 'Internal server error' })
     }
 
     const token = jwt.sign({ id: user.id, username: user.username, email: user.email }, jwtSecret, {
       expiresIn: '1h'
     })
+    const refreshToken = jwt.sign(
+      { id: user.id, username: user.username, email: user.email },
+      refreshJwtSecret,
+      {
+        expiresIn: '7d'
+      }
+    )
     return res.json({
       first_name: user.first_name,
       last_name: user.last_name,
       is_otp_enabled: user.is_otp_enabled,
-      token
+      token,
+      refreshToken
     })
   } catch (error) {
     logThisError(error)
