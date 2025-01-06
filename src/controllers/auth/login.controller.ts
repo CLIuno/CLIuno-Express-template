@@ -32,6 +32,10 @@ export default async function LoginController(req: Request, res: Response) {
       return res.status(401).json({ error: 'Invalid username/email or password' })
     }
 
+    if (user.is_deleted) {
+      return res.status(401).json({ error: 'User Is Deleted' })
+    }
+
     if (!user.is_verified) {
       return res.status(401).json({ error: 'Please verify your email address' })
     }

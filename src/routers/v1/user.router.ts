@@ -6,21 +6,25 @@ import { RoleMiddleware } from '@/middlewares/role.middleware'
 
 const router: Router = Router()
 // add ensureAuthenticated later
-router.get('/current', UserController.getCurrent)
+router.get('/current', ensureAuthenticated, UserController.getCurrent)
+
+router.patch('/current', ensureAuthenticated, UserController.updateCurrent)
+
+router.delete('/current', ensureAuthenticated, UserController.deleteCurrent)
 
 router.get('/username/:username', ensureAuthenticated, UserController.getByUsername)
+
+router.get('/posts', ensureAuthenticated, UserController.getPostsByUserId)
+
+router.get('/role', ensureAuthenticated, UserController.getRolesByUserId)
 
 router.get('/', RoleMiddleware.admin, UserController.getAll)
 
 router.get('/:id', ensureAuthenticated, UserController.getById)
 
-router.patch('/:id', ensureAuthenticated, UserController.update)
+router.patch('/:id', RoleMiddleware.admin, UserController.update)
 
-router.delete('/:id', ensureAuthenticated, UserController.delete)
-
-router.get(':user_id/posts', ensureAuthenticated, UserController.getPostsByUserId)
-
-router.get(':user_id/roles', ensureAuthenticated, UserController.getRolesByUserId)
+router.delete('/:id', RoleMiddleware.admin, UserController.delete)
 
 // Handle invalid request for the original path
 router.get('/', (req, res) => {

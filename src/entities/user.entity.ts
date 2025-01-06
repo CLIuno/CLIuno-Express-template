@@ -50,12 +50,15 @@ export class User {
   is_otp_verified: boolean
 
   @Column('text', { nullable: true })
+  @Exclude()
   otp_base32: string
 
   @Column('text', { nullable: true })
+  @Exclude()
   otp_auth_url: string
 
   @Column({ type: 'boolean', default: false })
+  @Exclude()
   is_deleted: boolean
 
   @Column('datetime')
@@ -65,6 +68,7 @@ export class User {
   updatedAt: Date
 
   @Column('datetime', { nullable: true })
+  @Exclude()
   deletedAt: Date
 
   @ManyToOne(() => Role, (role) => role.users, { nullable: false })

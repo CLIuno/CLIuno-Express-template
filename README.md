@@ -67,7 +67,7 @@ list of features that already implemented:
 
 | Status             | Feature                       |
 | ------------------ | ----------------------------- |
-| [ ]                | Auth routes                   |
+| :white_check_mark: | Auth routes                   |
 | [ ]                | User routes                   |
 | [ ]                | Role routes                   |
 | [ ]                | Post routes                   |
@@ -119,7 +119,7 @@ You will get more features if you buy the full version and you can use it for co
 | :white_check_mark: | Send Verification Email | POST   | `/api/v1/auth/send-verify-email` |
 | :white_check_mark: | Verify Email            | POST   | `/api/v1/auth/verify-email`      |
 | :white_check_mark: | Check Token             | POST   | `/api/v1/auth/check-token`       |
-| [ ]                | Refresh Token           | POST   | `/api/v1/auth/refresh-token`     |
+| :white_check_mark: | Refresh Token           | POST   | `/api/v1/auth/refresh-token`     |
 | :white_check_mark: | Verify OTP              | POST   | `/api/v1/auth/otp/verify`        |
 | :white_check_mark: | Disable OTP             | POST   | `/api/v1/auth/otp/disable`       |
 | :white_check_mark: | Validate OTP            | POST   | `/api/v1/auth/otp/validate`      |
@@ -127,17 +127,18 @@ You will get more features if you buy the full version and you can use it for co
 
 ### Users
 
-| Status | Endpoint Description    | Method | Path                                 |
-| ------ | ----------------------- | ------ | ------------------------------------ |
-| [ ]    | Get all current user    | GET    | `/api/v1/users/current`              |
-| [ ]    | Get user by username    | GET    | `/api/v1/users/username/:username`   |
-| [ ]    | Get all users           | GET    | `/api/v1/users`                      |
-| [ ]    | Get a user by ID        | GET    | `/api/v1/users/:id`                  |
-| [ ]    | Update user by ID       | PATCH  | `/api/v1/users/:id`                  |
-| [ ]    | Delete user by ID       | DELETE | `/api/v1/users/:id`                  |
-| [ ]    | Get permissions by user | GET    | `/api/v1/users/:user_id/permissions` |
-| [ ]    | Get posts by user       | GET    | `/api/v1/users/:user_id/posts`       |
-| [ ]    | Get roles by user       | GET    | `/api/v1/users/:user_id/roles`       |
+| Status             | Endpoint Description | Method | Path                               |
+| ------------------ | -------------------- | ------ | ---------------------------------- |
+| :white_check_mark: | Get current user     | GET    | `/api/v1/users/current`            |
+| :white_check_mark: | Update current user  | PATCH  | `/api/v1/users/current`            |
+| :white_check_mark: | Delete current user  | DELETE | `/api/v1/users/current`            |
+| :white_check_mark: | Get user by username | GET    | `/api/v1/users/username/:username` |
+| :white_check_mark: | Get all users        | GET    | `/api/v1/users`                    |
+| :white_check_mark: | Get a user by ID     | GET    | `/api/v1/users/:id`                |
+| :white_check_mark: | Update user by ID    | PATCH  | `/api/v1/users/:id`                |
+| :white_check_mark: | Delete user by ID    | DELETE | `/api/v1/users/:id`                |
+| :white_check_mark: | Get posts by user    | GET    | `/api/v1/users/posts`              |
+| :white_check_mark: | Get roles by user    | GET    | `/api/v1/users/role`               |
 
 ### Roles
 
