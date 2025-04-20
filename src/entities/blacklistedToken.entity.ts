@@ -1,13 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity('blacklisted_tokens')
+@Entity("blacklisted_tokens")
 export class BlacklistedToken {
-  @PrimaryGeneratedColumn('uuid')
-  id: string
+    @PrimaryGeneratedColumn("uuid")
+    id: string;
 
-  @Column('text')
-  token: string | undefined
+    @Column("text")
+    token: string | undefined;
 
-  @Column('text')
-  invalidatedAt: Date
+    @Column("text")
+    invalidatedAt: Date;
 }

@@ -1,25 +1,29 @@
-import { Router } from 'express'
+import { Router } from "express";
 
-import { RoleController } from '@/controllers/role.controller'
-import { RoleMiddleware } from '@/middlewares/role.middleware'
+import { RoleController } from "@/controllers/role.controller";
+import { RoleMiddleware } from "@/middlewares/role.middleware";
 
-const router: Router = Router()
+const router: Router = Router();
 // register routes
-router.get('/', RoleMiddleware.admin, RoleController.getAll)
+router.get("/", RoleMiddleware.admin, RoleController.getAll);
 
-router.get('/:id', RoleMiddleware.admin, RoleController.getById)
+router.get("/:id", RoleMiddleware.admin, RoleController.getById);
 
-router.post('/', RoleMiddleware.admin, RoleController.create)
+router.post("/", RoleMiddleware.admin, RoleController.create);
 
-router.patch('/:id', RoleMiddleware.admin, RoleController.update)
+router.patch("/:id", RoleMiddleware.admin, RoleController.update);
 
-router.delete('/:id', RoleMiddleware.admin, RoleController.delete)
+router.delete("/:id", RoleMiddleware.admin, RoleController.delete);
 
-router.get('/:role_id/users', RoleMiddleware.admin, RoleController.getUsersByRoleId)
+router.get(
+    "/:role_id/users",
+    RoleMiddleware.admin,
+    RoleController.getUsersByRoleId,
+);
 
 // Handle invalid request for the original path
-router.get('/', (req, res) => {
-  res.status(400).send('Invalid request')
-})
+router.get("/", (req, res) => {
+    res.status(400).send("Invalid request");
+});
 
-export default router
+export default router;
