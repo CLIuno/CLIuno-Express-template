@@ -20,9 +20,10 @@ export default async function RegisterController(req: Request, res: Response) {
         await ValidateRegister(req);
 
         if (!emailValidate(req.body.email)) {
-            return res
-                .status(400)
-                .json({ error: "Invalid email address", status: "failed" });
+            res.status(400).json({
+                status: "warning",
+                message: "Invalid email address",
+            });
         }
 
         const userExists = await myDataSource.getRepository(User).findOne({
@@ -30,9 +31,10 @@ export default async function RegisterController(req: Request, res: Response) {
         });
 
         if (userExists) {
-            return res
-                .status(400)
-                .json({ error: "User already exists", status: "failed" });
+            res.status(400).json({
+                status: "warning",
+                message: "User already exists",
+            });
         }
 
         const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
@@ -42,9 +44,10 @@ export default async function RegisterController(req: Request, res: Response) {
         });
 
         if (!role) {
-            return res
-                .status(400)
-                .json({ error: "Role does not exist", status: "failed" });
+            res.status(400).json({
+                status: "error",
+                message: "Role does not exist",
+            });
         }
 
         const newUser: any = myDataSource.getRepository(User).create({
@@ -63,14 +66,15 @@ export default async function RegisterController(req: Request, res: Response) {
         });
 
         res.status(201).json({
+            status: "success",
             message:
                 "User created successfully and an email has been sent to you for verification",
-            status: "success",
         });
     } catch (error: any) {
         logThisError(error);
         res.status(error.statusCode || 500).json({
-            error: error.message || "Internal server error",
+            status: "error",
+            message: error.message || "Internal server error",
         });
     }
 }

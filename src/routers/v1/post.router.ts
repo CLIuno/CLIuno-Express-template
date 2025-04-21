@@ -4,30 +4,26 @@ import { PostController } from "@/controllers/post.controller";
 import { ensureAuthenticated } from "@/middlewares/auth.middleware";
 
 const router: Router = Router();
-//  Post Router
 
-// get current user's posts
+//  All routes require authentication
+router.use(ensureAuthenticated);
+
+//  Posts for current user
 router.get("/current-user", PostController.getCurrentUserPosts);
 
-router.get("/", ensureAuthenticated, PostController.getAll);
+//  Post CRUD
+router.get("/", PostController.getAll);
+router.get("/:id", PostController.getById);
+router.post("/", PostController.create);
+router.patch("/:id", PostController.update);
+router.delete("/:id", PostController.delete);
 
-router.get("/:id", ensureAuthenticated, PostController.getById);
+//  Get user by post ID
+router.get("/:post_id/user", PostController.getUserByPostId);
 
-router.post("/", ensureAuthenticated, PostController.create);
-
-router.patch("/:id", ensureAuthenticated, PostController.update);
-
-router.delete("/:id", ensureAuthenticated, PostController.delete);
-
-router.get(
-    "/:post_id/user",
-    ensureAuthenticated,
-    PostController.getUserByPostId,
-);
-
-// Handle invalid request for the original path
+// Catch invalid requests
 router.get("/", (req, res) => {
-    res.status(400).send("Invalid request");
+    res.status(400).json({ status: "warning", message: "Invalid request" });
 });
 
 export default router;

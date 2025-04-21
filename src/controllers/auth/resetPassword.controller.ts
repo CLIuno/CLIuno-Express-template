@@ -19,14 +19,14 @@ export const ResetPasswordController = {
     forgotPassword: async (req: Request, res: Response) => {
         try {
             const { usernameOrEmail } = req.body;
-            // Ensure the request body is defined
-            if (!req.body || !usernameOrEmail) {
-                return res
-                    .status(400)
-                    .json({ message: "Email or Username  is required" });
+
+            if (!usernameOrEmail) {
+                res.status(400).json({
+                    status: "warning",
+                    message: "Email or Username is required",
+                });
             }
 
-            // Validate if user exists
             const isEmail = emailValidate(usernameOrEmail);
             const user = await myDataSource
                 .getRepository(User)
@@ -37,95 +37,107 @@ export const ResetPasswordController = {
                 );
 
             if (!user) {
-                return res
-                    .status(401)
-                    .json({ error: "Invalid username/email or password" });
+                res.status(401).json({
+                    status: "error",
+                    message: "Invalid username/email or password",
+                });
             }
 
             generateToken().then((token) => {
-                sendEmail.resetPassword(user.email, token, user.id);
+                sendEmail.resetPassword(user!.email, token, user!.id);
             });
 
-            return res.status(200).json({ message: "Email sent successfully" });
+            res.status(200).json({
+                status: "success",
+                message: "Email sent successfully",
+            });
         } catch (error) {
             logThisError(error);
-            res.status(500).json({ message: "Internal server error" });
+            res.status(500).json({
+                status: "error",
+                message: "Internal server error",
+            });
         }
     },
+
     resetPassword: async (req: Request, res: Response) => {
         try {
             await ValidateResetPassword(req);
 
-            // Validate if user exists
-            const user = await myDataSource.getRepository(User).findOneBy({
-                id: req.body.user_id,
-            });
+            const { user_id, token, password } = req.body;
 
-            if (!user) {
-                return res.status(400).json({ error: "User does not exist" });
-            }
+            const userRepo = myDataSource.getRepository(User);
+            const blacklistRepo = myDataSource.getRepository(BlacklistedToken);
 
-            // Check if the token is already blacklisted
-            const blacklistedToken = await myDataSource
-                .getRepository(BlacklistedToken)
-                .findOne({
-                    where: { token: req.body.token },
+            const user = await userRepo.findOneBy({ id: user_id });
+
+            if (user) {
+                const blacklistedToken = await blacklistRepo.findOne({
+                    where: { token },
                 });
-            if (blacklistedToken) {
-                return res
-                    .status(401)
-                    .json({ message: "Token has already been invalidated" });
+
+                if (blacklistedToken) {
+                    res.status(401).json({
+                        status: "warning",
+                        message: "Token has already been invalidated",
+                    });
+                } else {
+                    const newBlacklistedToken = new BlacklistedToken();
+                    newBlacklistedToken.token = token;
+                    newBlacklistedToken.invalidatedAt = new Date();
+                    await blacklistRepo.save(newBlacklistedToken);
+
+                    user.password = await bcrypt.hash(password, saltRounds);
+                    await userRepo.save(user);
+
+                    res.status(200).json({
+                        status: "success",
+                        message: "Password reset successful",
+                    });
+                }
+            } else {
+                res.status(400).json({
+                    status: "error",
+                    message: "User does not exist",
+                });
             }
-
-            // Add the token to the blacklist
-            const newBlacklistedToken = new BlacklistedToken();
-            newBlacklistedToken.token = req.body.token;
-            newBlacklistedToken.invalidatedAt = new Date();
-            await myDataSource
-                .getRepository(BlacklistedToken)
-                .save(newBlacklistedToken);
-
-            // Update user password
-            const hashedPassword = await bcrypt.hash(
-                req.body.password,
-                saltRounds,
-            );
-            user.password = hashedPassword;
-            await myDataSource.getRepository(User).save(user);
-
-            return res
-                .status(200)
-                .json({ message: "Password reset successful" });
         } catch (error: any) {
             logThisError(error);
             res.status(error.statusCode || 500).json({
-                error: error.message || "Internal server error",
+                status: "error",
+                message: error.message || "Internal server error",
             });
         }
     },
+
     changePassword: async (req: Request, res: Response) => {
         try {
             await ValidateChangePassword(req);
 
-            // Validate if user exists
-            const user = await myDataSource.getRepository(User).findOneBy({
-                id: req.body.user_id,
-            });
+            const { user_id, password } = req.body;
 
-            if (!user) {
-                return res.status(400).json({ error: "User does not exist" });
+            const userRepo = myDataSource.getRepository(User);
+            const user = await userRepo.findOneBy({ id: user_id });
+
+            if (user) {
+                user.password = await bcrypt.hash(password, saltRounds);
+                await userRepo.save(user);
+
+                res.status(200).json({
+                    status: "success",
+                    message: "Password changed successfully",
+                });
+            } else {
+                res.status(400).json({
+                    status: "error",
+                    message: "User does not exist",
+                });
             }
-
-            // Update user password
-            user.password = await bcrypt.hash(req.body.password, saltRounds);
-            await myDataSource.getRepository(User).save(user);
-            return res
-                .status(200)
-                .json({ message: "Password changed successfully" });
         } catch (error: any) {
             logThisError(error);
             res.status(error.statusCode || 500).json({
-                error: error.message || "Internal server error",
+                status: "error",
+                message: error.message || "Internal server error",
             });
         }
     },

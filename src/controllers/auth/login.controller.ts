@@ -10,21 +10,21 @@ import logThisError from "@/helpers/error-logger";
 
 dotenv.config();
 
-const jwtSecret = process.env.JWT_SECRET_KEY;
-const refreshJwtSecret = process.env.REFRESH_JWT_SECRET_KEY;
+const jwtSecret = process.env.JWT_SECRET_KEY as string;
+const refreshJwtSecret = process.env.REFRESH_JWT_SECRET_KEY as string;
 
 export default async function LoginController(req: Request, res: Response) {
     try {
         const { usernameOrEmail, password } = req.body;
 
-        // Validate usernameOrEmail and password
         if (!usernameOrEmail || !password) {
-            return res
-                .status(400)
-                .json({ error: "Username or email and password are required" });
+            res.status(400).json({
+                status: "warning",
+                message: "Username or email and password are required",
+            });
+            return;
         }
 
-        // Determine if usernameOrEmail is a valid email
         const isEmail = emailValidate(usernameOrEmail);
 
         const user = await myDataSource
@@ -36,48 +36,62 @@ export default async function LoginController(req: Request, res: Response) {
             );
 
         if (!user) {
-            return res
-                .status(401)
-                .json({ error: "Invalid username/email or password" });
+            res.status(401).json({
+                status: "error",
+                message: "Invalid username/email or password",
+            });
+            return;
         }
 
         if (user.is_deleted) {
-            return res.status(401).json({ error: "User Is Deleted" });
+            res.status(401).json({
+                status: "error",
+                message: "User is deleted",
+            });
+            return;
         }
 
         if (!user.is_verified) {
-            return res
-                .status(401)
-                .json({ error: "Please verify your email address" });
+            res.status(401).json({
+                status: "warning",
+                message: "Please verify your email address",
+            });
+            return;
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res
-                .status(401)
-                .json({ error: "Wrong username/email or password" });
+            res.status(401).json({
+                status: "error",
+                message: "Wrong username/email or password",
+            });
+            return;
         }
 
         if (!jwtSecret || !refreshJwtSecret) {
             logThisError("JWT Secret or Refresh JWT Secret is not defined");
-            return res.status(500).json({ error: "Internal server error" });
+            res.status(500).json({
+                status: "error",
+                message: "Internal server error",
+            });
+            return;
         }
 
         const token = jwt.sign(
             { id: user.id, username: user.username, email: user.email },
             jwtSecret,
-            {
-                expiresIn: "1h",
-            },
+            { expiresIn: "1h" },
         );
+
         const refreshToken = jwt.sign(
             { id: user.id, username: user.username, email: user.email },
             refreshJwtSecret,
-            {
-                expiresIn: "7d",
-            },
+            { expiresIn: "7d" },
         );
-        return res.json({
+
+        res.status(200).json({
+            status: "success",
+            message: "Login successful",
             first_name: user.first_name,
             last_name: user.last_name,
             is_otp_enabled: user.is_otp_enabled,
@@ -86,6 +100,9 @@ export default async function LoginController(req: Request, res: Response) {
         });
     } catch (error) {
         logThisError(error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({
+            status: "error",
+            message: "Internal server error",
+        });
     }
 }
