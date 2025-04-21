@@ -129,8 +129,10 @@ export const AuthController = {
             res.status(200).json({
                 status: "success",
                 message: "Token refreshed successfully",
-                token: newToken,
-                refreshToken: newRefreshToken,
+                data: {
+                    token: newToken,
+                    refreshToken: newRefreshToken,
+                },
             });
         });
     },
@@ -219,8 +221,10 @@ export const AuthController = {
                     res.status(200).json({
                         status: "success",
                         message: "Email verified successfully",
-                        token: newToken,
-                        refreshToken: newRefreshToken,
+                        data: {
+                            token: newToken,
+                            refreshToken: newRefreshToken,
+                        },
                     });
                 }
             } else {

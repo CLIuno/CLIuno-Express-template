@@ -12,7 +12,7 @@ export const RoleController = {
         res.status(200).json({
             status: "success",
             message: "Roles fetched successfully",
-            data: roles,
+            data: { roles },
         });
     },
 
@@ -27,7 +27,7 @@ export const RoleController = {
         res.status(200).json({
             status: "success",
             message: "Role fetched successfully",
-            data: role,
+            data: { role },
         });
     },
 
@@ -54,7 +54,7 @@ export const RoleController = {
         res.status(201).json({
             status: "success",
             message: "Role created successfully",
-            data: savedRole,
+            data: { savedRole },
         });
     },
 
@@ -81,7 +81,7 @@ export const RoleController = {
         res.status(200).json({
             status: "success",
             message: "Role updated successfully",
-            data: updatedRole,
+            data: { updatedRole },
         });
     },
 
@@ -144,7 +144,7 @@ export const RoleController = {
         res.status(200).json({
             status: "success",
             message: "Users found",
-            data: users,
+            data: { users },
         });
     },
 };

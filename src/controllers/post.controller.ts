@@ -58,7 +58,7 @@ export const PostController = {
             res.status(200).json({
                 status: "success",
                 message: "User posts fetched successfully",
-                data: posts,
+                data: { posts },
             });
         } catch (error) {
             logThisError(error);
@@ -67,20 +67,20 @@ export const PostController = {
     },
 
     getAll: async (req: Request, res: Response): Promise<void> => {
-        const results = await myDataSource.getRepository(Post).find();
+        const posts = await myDataSource.getRepository(Post).find();
         res.status(200).json({
             status: "success",
             message: "Posts fetched successfully",
-            data: results,
+            data: { posts },
         });
     },
 
     getById: async (req: Request, res: Response): Promise<void> => {
-        const result = await myDataSource.getRepository(Post).findOneBy({
+        const post = await myDataSource.getRepository(Post).findOneBy({
             id: req.params.id,
         });
 
-        if (!result) {
+        if (!post) {
             res.status(404).json({
                 status: "error",
                 message: "Post not found",
@@ -91,7 +91,7 @@ export const PostController = {
         res.status(200).json({
             status: "success",
             message: "Post fetched successfully",
-            data: result,
+            data: { post },
         });
     },
 
@@ -114,7 +114,7 @@ export const PostController = {
         res.status(200).json({
             status: "success",
             message: "Post created successfully",
-            data: result,
+            data: { result },
         });
     },
 
@@ -132,12 +132,11 @@ export const PostController = {
         }
 
         myDataSource.getRepository(Post).merge(post, req.body);
-        const result = await myDataSource.getRepository(Post).save(post);
+        await myDataSource.getRepository(Post).save(post);
 
         res.status(200).json({
             status: "success",
             message: "Post updated successfully",
-            data: result,
         });
     },
 
@@ -194,7 +193,7 @@ export const PostController = {
         res.status(200).json({
             status: "success",
             message: "User found",
-            data: post.user,
+            data: { user: post.user },
         });
     },
 };

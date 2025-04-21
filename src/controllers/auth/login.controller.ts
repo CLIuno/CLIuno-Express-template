@@ -92,11 +92,13 @@ export default async function LoginController(req: Request, res: Response) {
         res.status(200).json({
             status: "success",
             message: "Login successful",
-            first_name: user.first_name,
-            last_name: user.last_name,
-            is_otp_enabled: user.is_otp_enabled,
-            token,
-            refreshToken,
+            data: {
+                first_name: user.first_name,
+                last_name: user.last_name,
+                is_otp_enabled: user.is_otp_enabled,
+                token,
+                refreshToken,
+            },
         });
     } catch (error) {
         logThisError(error);

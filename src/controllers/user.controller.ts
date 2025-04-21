@@ -132,7 +132,7 @@ export const UserController = {
             res.status(200).json({
                 status: "success",
                 message: "User updated",
-                data: transformed,
+                data: { transformed },
             });
         } catch (error) {
             console.error(error);
@@ -196,7 +196,7 @@ export const UserController = {
             res.status(200).json({
                 status: "success",
                 message: "User deleted",
-                data: transformed,
+                data: { transformed },
             });
         } catch (error) {
             console.error(error);
@@ -265,7 +265,7 @@ export const UserController = {
             res.status(200).json({
                 status: "success",
                 message: "Posts",
-                data: posts,
+                data: { posts },
             });
         } catch (error) {
             console.error(error);
@@ -304,7 +304,7 @@ export const UserController = {
             res.status(200).json({
                 status: "success",
                 message: "Role found",
-                data: role,
+                data: { role },
             });
         } catch (error) {
             console.error(error);
