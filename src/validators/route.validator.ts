@@ -1,11 +1,11 @@
-import { IsString, IsNotEmpty } from 'class-validator'
+import { IsString, IsNotEmpty } from "class-validator";
 
 class Route {
-  @IsString()
-  @IsNotEmpty()
-  originator: string | unknown
+    @IsString()
+    @IsNotEmpty()
+    originator: string | unknown;
 
-  // Add more properties and validation decorators as needed
+    // Add more properties and validation decorators as needed
 }
 
-export default Route
+export default Route;

@@ -1,72 +1,150 @@
-import { Request, Response } from 'express'
+import { Request, Response } from "express";
+import { myDataSource } from "@/database/app-data-source";
+import { Role } from "@/entities/role.entity";
+import { User } from "@/entities/user.entity";
 
-import { myDataSource } from '@/database/app-data-source'
-import { Role } from '@/entities/role.entity'
-import { User } from '@/entities/user.entity'
+const roleRepository = myDataSource.getRepository(Role);
+const userRepository = myDataSource.getRepository(User);
 
 export const RoleController = {
-  getAll: async (req: Request, res: Response) => {
-    const results = await myDataSource.getRepository(Role).find()
-    return res.send(results)
-  },
-  getById: async (req: Request, res: Response) => {
-    const results = await myDataSource.getRepository(Role).findOneBy({
-      id: req.params.id
-    })
-    return res.send(results)
-  },
-  create: async (req: Request, res: Response) => {
-    const { name } = req.body // Assuming 'name' is the unique field for the role
+    getAll: async (_req: Request, res: Response) => {
+        const roles = await roleRepository.find();
+        res.status(200).json({
+            status: "success",
+            message: "Roles fetched successfully",
+            data: { roles },
+        });
+    },
 
-    // Check if the role already exists
-    const existingRole = await myDataSource.getRepository(Role).findOneBy({ name })
-    if (!existingRole) {
-      return res.status(400).json({ message: 'Role already exists' })
-    }
-    // Create and save the new role
-    const role = myDataSource.getRepository(Role).create(req.body)
-    const results = await myDataSource.getRepository(Role).save(role)
-    return res.send(results)
-  },
-  update: async (req: Request, res: Response) => {
-    const role = await myDataSource.getRepository(Role).findOneBy({
-      id: req.params.id
-    })
-    myDataSource.getRepository(Role).merge(role as any, req.body)
-    const results = await myDataSource.getRepository(Role).save(role as any)
-    return res.send(results)
-  },
-  delete: async (req: any, res: Response) => {
-    const results = await myDataSource.getRepository(Role).delete(req.params.id)
-    return res.send(results)
-  },
-  getUsersByRoleId: async (req: Request, res: Response) => {
-    const { role_id } = req.body
+    getById: async (req: Request, res: Response) => {
+        const role = await roleRepository.findOneBy({ id: req.params.id });
+        if (!role) {
+            res.status(404).json({
+                status: "warning",
+                message: "Role not found",
+            });
+        }
+        res.status(200).json({
+            status: "success",
+            message: "Role fetched successfully",
+            data: { role },
+        });
+    },
 
-    if (!role_id) {
-      return res.status(400).json({ message: 'Role ID is required' })
-    }
+    create: async (req: Request, res: Response) => {
+        const { name } = req.body;
+        if (!name) {
+            res.status(400).json({
+                status: "warning",
+                message: "Role name is required",
+            });
+        }
 
-    const results = await myDataSource.getRepository(Role).findOneBy({
-      id: role_id
-    })
+        const existingRole = await roleRepository.findOneBy({ name });
+        if (existingRole) {
+            res.status(400).json({
+                status: "warning",
+                message: "Role already exists",
+            });
+        }
 
-    if (!results) {
-      return res.status(404).json({ message: 'Role not found' })
-    }
+        const newRole = roleRepository.create({ name });
+        const savedRole = await roleRepository.save(newRole);
 
-    const users = await myDataSource.getRepository(User).find({
-      where: { role_id: role_id }
-    })
+        res.status(201).json({
+            status: "success",
+            message: "Role created successfully",
+            data: { savedRole },
+        });
+    },
 
-    if (!users) {
-      return res.status(404).json({ message: 'Users not found' })
-    }
+    update: async (req: Request, res: Response) => {
+        const role = await roleRepository.findOneBy({ id: req.params.id });
+        if (!role) {
+            res.status(404).json({
+                status: "warning",
+                message: "Role not found",
+            });
+        }
 
-    return res.status(200).json({
-      status: 'success',
-      message: 'Users found',
-      data: users
-    })
-  }
-}
+        if (!role) {
+            res.status(404).json({
+                status: "warning",
+                message: "Role not found",
+            });
+            return;
+        }
+
+        roleRepository.merge(role, req.body);
+        const updatedRole = await roleRepository.save(role);
+
+        res.status(200).json({
+            status: "success",
+            message: "Role updated successfully",
+            data: { updatedRole },
+        });
+    },
+
+    delete: async (req: Request, res: Response) => {
+        const { id } = req.params;
+
+        if (!id) {
+            res.status(400).json({
+                status: "warning",
+                message: "Role ID is required",
+            });
+        }
+
+        const role = await roleRepository.findOneBy({ id });
+        if (!role) {
+            res.status(404).json({
+                status: "warning",
+                message: "Role not found",
+            });
+        }
+
+        if (id) {
+            await roleRepository.delete(id);
+        } else {
+            res.status(400).json({
+                status: "warning",
+                message: "Valid Role ID is required",
+            });
+            return;
+        }
+
+        res.status(200).json({
+            status: "success",
+            message: "Role deleted successfully",
+        });
+    },
+
+    getUsersByRoleId: async (req: Request, res: Response) => {
+        const { role_id } = req.body;
+
+        if (!role_id) {
+            res.status(400).json({
+                status: "warning",
+                message: "Role ID is required",
+            });
+        }
+
+        const role = await roleRepository.findOneBy({ id: role_id });
+        if (!role) {
+            res.status(404).json({
+                status: "warning",
+                message: "Role not found",
+            });
+        }
+
+        const users = await userRepository.find({
+            where: { role: { id: role_id } },
+        });
+
+        res.status(200).json({
+            status: "success",
+            message: "Users found",
+            data: { users },
+        });
+    },
+};
