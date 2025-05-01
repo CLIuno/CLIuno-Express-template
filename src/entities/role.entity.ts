@@ -1,28 +1,21 @@
-import {
-    Entity,
-    Column,
-    PrimaryGeneratedColumn,
-    OneToMany,
-    CreateDateColumn,
-    UpdateDateColumn,
-} from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm'
 
-import { User } from "./user.entity";
+import { User } from './user.entity'
 
-@Entity("Roles")
+@Entity('Roles')
 export class Role {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
-    @Column("text", { nullable: false })
-    name: string;
+  @Column('text', { nullable: false })
+  name: string
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @CreateDateColumn()
+  createdAt: Date
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+  @UpdateDateColumn()
+  updatedAt: Date
 
-    @OneToMany(() => User, (user) => user.role)
-    users: User[];
+  @OneToMany(() => User, (user) => user.role)
+  users: User[]
 }

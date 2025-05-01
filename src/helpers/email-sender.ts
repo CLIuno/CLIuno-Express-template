@@ -1,37 +1,37 @@
-import dotenv from "dotenv";
-import mailer from "nodemailer";
+import dotenv from 'dotenv'
+import mailer from 'nodemailer'
 
-import logThisError from "@/helpers/error-logger";
+import logThisError from '@/helpers/error-logger'
 interface MailOptions {
-    from: any;
-    to: string;
-    subject: string;
-    html: string;
-    templates: {
-        [key: string]: string;
-        resetPassword: string;
-        verifyEmail: string;
-    };
+  from: any
+  to: string
+  subject: string
+  html: string
+  templates: {
+    [key: string]: string
+    resetPassword: string
+    verifyEmail: string
+  }
 }
 
-dotenv.config();
+dotenv.config()
 
 const smtp = mailer.createTransport({
-    host: process.env.MAIL_HOST || "localhost",
-    port: parseInt(process.env.MAIL_PORT || "1025"),
-    auth: {
-        user: process.env.MAIL_USERNAME,
-        pass: process.env.MAIL_PASSWORD,
-    },
-});
+  host: process.env.MAIL_HOST || 'localhost',
+  port: parseInt(process.env.MAIL_PORT || '1025'),
+  auth: {
+    user: process.env.MAIL_USERNAME,
+    pass: process.env.MAIL_PASSWORD
+  }
+})
 
 const mailOptions: MailOptions = {
-    from: process.env.MAIL_FROM_ADDRESS,
-    to: "",
-    subject: "",
-    html: "",
-    templates: {
-        resetPassword: `
+  from: process.env.MAIL_FROM_ADDRESS,
+  to: '',
+  subject: '',
+  html: '',
+  templates: {
+    resetPassword: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6;">
         <h2>Hello,</h2>
         <p>You requested to reset your password. Click the button below to reset it:</p>
@@ -45,7 +45,7 @@ const mailOptions: MailOptions = {
         <p>Thank you,<br>Your Company Team</p>
       </div>
     `,
-        verifyEmail: `
+    verifyEmail: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6;">
         <h2>Hello,</h2>
         <p>Thank you for registering. Click the button below to verify your email address:</p>
@@ -58,42 +58,33 @@ const mailOptions: MailOptions = {
         <p>If you did not register for an account, please ignore this email or contact support if you have questions.</p>
         <p>Thank you,<br>Your Company Team</p>
       </div>
-    `,
-    },
-};
+    `
+  }
+}
 
-const SEND = async (
-    emailType: string,
-    to: string,
-    token: string,
-    userId: string,
-) => {
-    smtp.sendMail(
-        {
-            ...mailOptions,
-            to,
-            html:
-                mailOptions.templates[emailType]?.replace(
-                    "token=",
-                    `token=${token}&userId=${userId}`,
-                ) || "",
-        },
-        (error, info) => {
-            if (!error) {
-                logThisError(`Email sent: ${info.response}`);
-            } else {
-                logThisError(`Error sending email: ${error}`);
-            }
-            smtp.close();
-        },
-    );
-};
+const SEND = async (emailType: string, to: string, token: string, userId: string) => {
+  smtp.sendMail(
+    {
+      ...mailOptions,
+      to,
+      html: mailOptions.templates[emailType]?.replace('token=', `token=${token}&userId=${userId}`) || ''
+    },
+    (error, info) => {
+      if (!error) {
+        logThisError(`Email sent: ${info.response}`)
+      } else {
+        logThisError(`Error sending email: ${error}`)
+      }
+      smtp.close()
+    }
+  )
+}
 
 export const sendEmail = {
-    resetPassword: async (to: string, token: string, userId: string) => {
-        await SEND("resetPassword", to, token, userId);
-    },
-    verifyEmail: async (to: string, token: string, userId: string) => {
-        await SEND("verifyEmail", to, token, userId);
-    },
-};
+  resetPassword: async (to: string, token: string, userId: string) => {
+    await SEND('resetPassword', to, token, userId)
+  },
+  verifyEmail: async (to: string, token: string, userId: string) => {
+    await SEND('verifyEmail', to, token, userId)
+  }
+}
