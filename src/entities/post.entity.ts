@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm'
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn
+} from 'typeorm'
 
 import { User } from './user.entity'
 
@@ -16,10 +24,10 @@ export class Post {
   @Column('text')
   imageUrl: string
 
-  @Column('datetime')
+  @CreateDateColumn()
   createdAt: Date
 
-  @Column('datetime')
+  @UpdateDateColumn()
   updatedAt: Date
 
   @Column({ type: 'boolean', default: false })
@@ -27,5 +35,5 @@ export class Post {
 
   @ManyToOne(() => User, (user) => user.posts, { nullable: false })
   @JoinColumn({ name: 'user_id' })
-  user_id: User
+  user: User
 }

@@ -55,7 +55,13 @@ pnpm install
 
 ## Usage
 
-to run the project run the following command
+after installing the dependencies you can run the project using the following command to migrate the database
+
+```bash
+pnpm migrate
+```
+
+then you run the project using the following command
 
 ```bash
 pnpm dev

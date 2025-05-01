@@ -4,22 +4,23 @@ import { RoleController } from '@/controllers/role.controller'
 import { RoleMiddleware } from '@/middlewares/role.middleware'
 
 const router: Router = Router()
-// register routes
-router.get('/', RoleMiddleware.admin, RoleController.getAll)
 
-router.get('/:id', RoleMiddleware.admin, RoleController.getById)
+// All routes require admin access
+router.use(RoleMiddleware.admin)
 
-router.post('/', RoleMiddleware.admin, RoleController.create)
+// Role CRUD
+router.get('/', RoleController.getAll)
+router.get('/:id', RoleController.getById)
+router.post('/', RoleController.create)
+router.patch('/:id', RoleController.update)
+router.delete('/:id', RoleController.delete)
 
-router.patch('/:id', RoleMiddleware.admin, RoleController.update)
+// Users by Role
+router.get('/:role_id/users', RoleController.getUsersByRoleId)
 
-router.delete('/:id', RoleMiddleware.admin, RoleController.delete)
-
-router.get('/:role_id/users', RoleMiddleware.admin, RoleController.getUsersByRoleId)
-
-// Handle invalid request for the original path
+// Fallback for invalid request
 router.get('/', (req, res) => {
-  res.status(400).send('Invalid request')
+  res.status(400).json({ status: 'warning', message: 'Invalid request' })
 })
 
 export default router

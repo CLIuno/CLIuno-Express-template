@@ -1,8 +1,17 @@
 import { Exclude } from 'class-transformer'
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm'
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn
+} from 'typeorm'
 
-import { Post } from './post.entity'
 import { Role } from './role.entity'
+import { Post } from './post.entity'
 
 @Entity('Users')
 export class User {
@@ -57,24 +66,28 @@ export class User {
   @Exclude()
   otp_auth_url: string
 
+  @Column('text', { nullable: true })
+  @Exclude()
+  refresh_token: string
+
   @Column({ type: 'boolean', default: false })
   @Exclude()
   is_deleted: boolean
 
-  @Column('datetime')
+  @CreateDateColumn()
   createdAt: Date
 
-  @Column('datetime')
+  @UpdateDateColumn()
   updatedAt: Date
 
   @Column('datetime', { nullable: true })
   @Exclude()
   deletedAt: Date
 
-  @ManyToOne(() => Role, (role) => role.users, { nullable: false })
+  @ManyToOne(() => Role, { nullable: false })
   @JoinColumn({ name: 'role_id' })
-  role_id: Role
+  role: Role
 
-  @OneToMany(() => Post, (post) => post.user_id)
+  @OneToMany(() => Post, (post) => post.user)
   posts: Post[]
 }

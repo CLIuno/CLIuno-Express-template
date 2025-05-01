@@ -11,264 +11,291 @@ import logThisError from '@/helpers/error-logger'
 
 dotenv.config()
 
+const extractTokenPayload = (req: Request, res: Response): any | undefined => {
+  const authHeader = req.headers.authorization
+  if (!authHeader) {
+    res.status(401).json({ status: 'warning', error: 'No token provided' })
+    return
+  }
+
+  const parts = authHeader.split(' ')
+  if (parts.length !== 2) {
+    res.status(401).json({ status: 'warning', error: 'Token error' })
+    return
+  }
+
+  const [scheme, token] = parts
+  if (scheme && !/^Bearer$/i.test(scheme)) {
+    res.status(401).json({
+      status: 'warning',
+      error: 'Token malformatted'
+    })
+    return
+  }
+
+  try {
+    return jwt.verify(token as string, process.env.JWT_SECRET_KEY as Secret, {
+      ignoreExpiration: true
+    }) as any
+  } catch (error) {
+    logThisError(error)
+    res.status(401).json({ status: 'error', message: 'Invalid token' })
+  }
+}
+
 export const UserController = {
-  getAll: async (req: Request, res: Response) => {
-    const userRepository = myDataSource.getRepository(User)
-    const results = await userRepository.find()
-    const transformedResults = plainToInstance(User, results, { excludeExtraneousValues: false })
-    return res.status(200).send(transformedResults)
+  getAll: async (_req: Request, res: Response) => {
+    const users = await myDataSource.getRepository(User).find()
+    const transformed = plainToInstance(User, users, {
+      excludeExtraneousValues: false
+    })
+    res.status(200).json({ status: 'success', data: transformed })
   },
+
   getById: async (req: Request, res: Response) => {
-    const results = await myDataSource.getRepository(User).findOneBy({
-      id: req.params.id
-    })
-    if (!results) {
-      return res.status(401).send({ error: 'No User found' })
+    const user = await myDataSource.getRepository(User).findOneBy({ id: req.params.id })
+    if (!user) {
+      res.status(404).json({
+        status: 'warning',
+        message: 'User not found'
+      })
     }
-    const transformedResults = plainToInstance(User, results, { excludeExtraneousValues: false })
-    return res.status(200).send(transformedResults)
+    const transformed = plainToInstance(User, user, {
+      excludeExtraneousValues: false
+    })
+    res.status(200).json({ status: 'success', data: transformed })
   },
+
   getCurrent: async (req: Request, res: Response) => {
-    const authHeader = req.headers.authorization
-    if (!authHeader) {
-      return res.status(401).send({ error: 'No token provided' })
-    }
-    const parts = authHeader.split(' ')
-    if (parts.length !== 2) {
-      return res.status(401).send({ error: 'Token error' })
-    }
-    const [scheme, token]: any = parts
-    if (!/^Bearer$/i.test(scheme)) {
-      return res.status(401).send({ error: 'Token malformatted' })
-    }
+    const decoded = extractTokenPayload(req, res)
+    if (!decoded) return
 
-    try {
-      // Verify and decode the token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as Secret, {
-        ignoreExpiration: true
-      }) as any
-
-      // Fetch the user from the database
-      const results = await myDataSource.getRepository(User).findOneBy({
-        id: decoded.id
+    const user = await myDataSource.getRepository(User).findOneBy({ id: decoded.id })
+    if (!user) {
+      res.status(404).json({
+        status: 'warning',
+        message: 'User not found'
       })
-
-      if (!results) {
-        return res.status(404).send({ message: 'User not found' })
-      }
-
-      const transformedResults = plainToInstance(User, results, { excludeExtraneousValues: false })
-      return res.status(200).send(transformedResults)
-    } catch (error) {
-      logThisError(error)
-      return res.status(401).send({ message: 'Invalid token' })
     }
-  },
-  getByUsername: async (req: Request, res: Response) => {
-    const results = await myDataSource.getRepository(User).findOneBy({
-      username: req.params.username
+
+    const transformed = plainToInstance(User, user, {
+      excludeExtraneousValues: false
     })
-
-    if (!results) {
-      return res.status(404).send({ message: 'User not found' })
-    }
-
-    const transformedResults = plainToInstance(User, results, { excludeExtraneousValues: false })
-    return res.status(200).send(transformedResults)
+    res.status(200).json({ status: 'success', data: transformed })
   },
+
+  getByUsername: async (req: Request, res: Response) => {
+    const user = await myDataSource.getRepository(User).findOneBy({ username: req.params.username })
+    if (!user) {
+      res.status(404).json({
+        status: 'warning',
+        message: 'User not found'
+      })
+    }
+    const transformed = plainToInstance(User, user, {
+      excludeExtraneousValues: false
+    })
+    res.status(200).json({ status: 'success', data: transformed })
+  },
+
   updateCurrent: async (req: Request, res: Response) => {
-    const authHeader = req.headers.authorization
-    if (!authHeader) {
-      return res.status(401).send({ error: 'No token provided' })
-    }
-    const parts = authHeader.split(' ')
-    if (parts.length !== 2) {
-      return res.status(401).send({ error: 'Token error' })
-    }
-    const [scheme, token]: any = parts
-    if (!/^Bearer$/i.test(scheme)) {
-      return res.status(401).send({ error: 'Token malformatted' })
-    }
+    const decoded = extractTokenPayload(req, res)
+    if (!decoded) return
 
     try {
-      // Verify and decode the token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as Secret, {
-        ignoreExpiration: true
-      }) as any
-
-      // Fetch the user from the database
-      const user = await myDataSource.getRepository(User).findOneBy({
-        id: decoded.id
-      })
+      const repo = myDataSource.getRepository(User)
+      const user = await repo.findOneBy({ id: decoded.id })
 
       if (!user) {
-        return res.status(404).json({
-          status: 'error',
-          message: 'User not found.'
+        res.status(404).json({
+          status: 'warning',
+          message: 'User not found'
         })
       }
 
-      myDataSource.getRepository(User).merge(user as any, req.body)
-      const results = await myDataSource.getRepository(User).save(user as any)
-      const transformedResults = plainToInstance(User, results, { excludeExtraneousValues: false })
-      return res.status(200).send(transformedResults)
+      repo.merge(user as any, req.body)
+      const updated = await repo.save(user as any)
+      const transformed = plainToInstance(User, updated, {
+        excludeExtraneousValues: false
+      })
+
+      res.status(200).json({
+        status: 'success',
+        message: 'User updated',
+        data: { transformed }
+      })
     } catch (error) {
       console.error(error)
-      return res.status(500).json({
+      res.status(500).json({
         status: 'error',
         message: 'An error occurred while updating the user.'
       })
     }
   },
+
   update: async (req: Request, res: Response) => {
     try {
-      const user = await myDataSource.getRepository(User).findOneBy({
-        id: req.params.id
-      })
+      const repo = myDataSource.getRepository(User)
+      const user = await repo.findOneBy({ id: req.params.id })
 
       if (!user) {
-        return res.status(404).json({
-          status: 'error',
-          message: 'User not found.'
+        res.status(404).json({
+          status: 'warning',
+          message: 'User not found'
         })
       }
 
-      myDataSource.getRepository(User).merge(user as any, req.body)
-      const results = await myDataSource.getRepository(User).save(user as any)
-      const transformedResults = plainToInstance(User, results, { excludeExtraneousValues: false })
-      return res.status(200).send(transformedResults)
+      repo.merge(user as any, req.body)
+      const updated = await repo.save(user as any)
+      const transformed = plainToInstance(User, updated, {
+        excludeExtraneousValues: false
+      })
+
+      res.status(200).json({ status: 'success', data: transformed })
     } catch (error) {
       console.error(error)
-      return res.status(500).json({
+      res.status(500).json({
         status: 'error',
         message: 'An error occurred while updating the user.'
       })
     }
   },
+
   deleteCurrent: async (req: Request, res: Response) => {
-    const authHeader = req.headers.authorization
-    if (!authHeader) {
-      return res.status(401).send({ error: 'No token provided' })
-    }
-    const parts = authHeader.split(' ')
-    if (parts.length !== 2) {
-      return res.status(401).send({ error: 'Token error' })
-    }
-    const [scheme, token]: any = parts
-    if (!/^Bearer$/i.test(scheme)) {
-      return res.status(401).send({ error: 'Token malformatted' })
-    }
+    const decoded = extractTokenPayload(req, res)
+    if (!decoded) return
 
     try {
-      // Verify and decode the token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as Secret, {
-        ignoreExpiration: true
-      }) as any
-
-      // Fetch the user from the database
-      const user = await myDataSource.getRepository(User).findOneBy({
-        id: decoded.id
-      })
+      const repo = myDataSource.getRepository(User)
+      const user = await repo.findOneBy({ id: decoded.id })
 
       if (!user) {
-        return res.status(404).json({
-          status: 'error',
-          message: 'User not found.'
+        res.status(404).json({
+          status: 'warning',
+          message: 'User not found'
         })
+        return
       }
+
       user.is_deleted = true
-      const results = await myDataSource.getRepository(User).save(user)
-      const transformedResults = plainToInstance(User, results, { excludeExtraneousValues: false })
-      return res.status(200).send(transformedResults)
+      const updated = await repo.save(user)
+      const transformed = plainToInstance(User, updated, {
+        excludeExtraneousValues: false
+      })
+
+      res.status(200).json({
+        status: 'success',
+        message: 'User deleted',
+        data: { transformed }
+      })
     } catch (error) {
       console.error(error)
-      return res.status(500).json({
+      res.status(500).json({
         status: 'error',
         message: 'An error occurred while deleting the user.'
       })
     }
   },
+
   delete: async (req: Request, res: Response) => {
-    // mark user as deleted
     try {
-      const user = await myDataSource.getRepository(User).findOneBy({
-        id: req.params.id
-      })
+      const repo = myDataSource.getRepository(User)
+      const user = await repo.findOneBy({ id: req.params.id })
+
       if (!user) {
-        return res.status(404).json({
-          status: 'error',
-          message: 'User not found.'
+        res.status(404).json({
+          status: 'warning',
+          message: 'User not found'
         })
+        return
       }
+
       user.is_deleted = true
-      const results = await myDataSource.getRepository(User).save(user)
-      const transformedResults = plainToInstance(User, results, { excludeExtraneousValues: false })
-      return res.status(200).send(transformedResults)
+      const updated = await repo.save(user)
+      const transformed = plainToInstance(User, updated, {
+        excludeExtraneousValues: false
+      })
+
+      res.status(200).json({ status: 'success', data: transformed })
     } catch (error) {
       console.error(error)
-      return res.status(500).json({
+      res.status(500).json({
         status: 'error',
         message: 'An error occurred while deleting the user.'
       })
     }
   },
+
   getPostsByUserId: async (req: Request, res: Response) => {
     const { user_id } = req.body
+
+    if (!user_id) {
+      res.status(400).json({
+        status: 'warning',
+        message: 'User ID is required'
+      })
+    }
+
     try {
-      if (!user_id) {
-        return res.status(400).json({ message: 'User ID is required' })
+      const user = await myDataSource.getRepository(User).findOneBy({ id: user_id })
+      if (!user) {
+        res.status(404).json({
+          status: 'warning',
+          message: 'User not found'
+        })
       }
 
-      const results = await myDataSource.getRepository(User).findOneBy({
-        id: user_id
+      const posts = await myDataSource.getRepository(Post).find({
+        where: { user: user_id },
+        relations: ['user_id']
       })
 
-      if (!results) {
-        return res.status(404).json({ message: 'User not found' })
-      }
-
-      const posts: any = await myDataSource.getRepository(Post).find({
-        where: { user_id: (req as any).user_id },
-        relations: ['user_id'] // Adjust based on your actual relation
-      })
-
-      return res.status(200).json({
+      res.status(200).json({
         status: 'success',
         message: 'Posts',
-        data: posts
+        data: { posts }
       })
     } catch (error) {
       console.error(error)
-      return res.status(500).json({ error: 'Internal server error' })
+      res.status(500).json({
+        status: 'error',
+        message: 'Internal server error'
+      })
     }
   },
+
   getRolesByUserId: async (req: Request, res: Response) => {
+    const { user_id } = req.body
+
+    if (!user_id) {
+      res.status(400).json({
+        status: 'warning',
+        message: 'User ID is required'
+      })
+    }
+
     try {
-      const { user_id } = req.body
-      if (!user_id) {
-        return res.status(400).json({ message: 'User ID is required' })
+      const user = await myDataSource.getRepository(User).findOneBy({ id: user_id })
+      if (!user) {
+        res.status(404).json({
+          status: 'warning',
+          message: 'User not found'
+        })
       }
 
-      const results = await myDataSource.getRepository(User).findOneBy({
-        id: user_id
-      })
+      const role = await myDataSource.getRepository(Role).findOneBy({ id: user_id })
 
-      if (!results) {
-        return res.status(404).json({ message: 'User not found' })
-      }
-
-      const role = await myDataSource.getRepository(Role).findOneBy({
-        id: user_id
-      })
-
-      return res.status(200).json({
+      res.status(200).json({
         status: 'success',
         message: 'Role found',
-        data: role
+        data: { role }
       })
     } catch (error) {
       console.error(error)
-      return res.status(500).json({ error: 'Internal server error' })
+      res.status(500).json({
+        status: 'error',
+        message: 'Internal server error'
+      })
     }
   }
 }

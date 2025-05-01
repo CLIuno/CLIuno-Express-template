@@ -20,7 +20,10 @@ export default async function RegisterController(req: Request, res: Response) {
     await ValidateRegister(req)
 
     if (!emailValidate(req.body.email)) {
-      return res.status(400).json({ error: 'Invalid email address', status: 'failed' })
+      res.status(400).json({
+        status: 'warning',
+        message: 'Invalid email address'
+      })
     }
 
     const userExists = await myDataSource.getRepository(User).findOne({
@@ -28,23 +31,29 @@ export default async function RegisterController(req: Request, res: Response) {
     })
 
     if (userExists) {
-      return res.status(400).json({ error: 'User already exists', status: 'failed' })
+      res.status(400).json({
+        status: 'warning',
+        message: 'User already exists'
+      })
     }
 
     const hashedPassword = await bcrypt.hash(req.body.password, saltRounds)
 
-    const role_id = await myDataSource.getRepository(Role).findOne({
+    const role = await myDataSource.getRepository(Role).findOne({
       where: [{ name: 'user' }]
     })
 
-    if (!role_id) {
-      return res.status(400).json({ error: 'Role does not exist', status: 'failed' })
+    if (!role) {
+      res.status(400).json({
+        status: 'error',
+        message: 'Role does not exist'
+      })
     }
 
     const newUser: any = myDataSource.getRepository(User).create({
       ...req.body,
       password: hashedPassword,
-      role_id: role_id,
+      role: role,
       createdAt: new Date(),
       updatedAt: new Date()
     })
@@ -57,11 +66,14 @@ export default async function RegisterController(req: Request, res: Response) {
     })
 
     res.status(201).json({
-      message: 'User created successfully and an email has been sent to you for verification',
-      status: 'success'
+      status: 'success',
+      message: 'User created successfully and an email has been sent to you for verification'
     })
   } catch (error: any) {
     logThisError(error)
-    res.status(error.statusCode || 500).json({ error: error.message || 'Internal server error' })
+    res.status(error.statusCode || 500).json({
+      status: 'error',
+      message: error.message || 'Internal server error'
+    })
   }
 }

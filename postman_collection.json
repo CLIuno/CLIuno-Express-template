@@ -1,10 +1,10 @@
 {
   "info": {
-    "_postman_id": "26532d3e-7af2-4f41-97b0-862707816526",
+    "_postman_id": "03b0a849-0cf3-48bd-99b5-456b25eb5722",
     "name": "Blog",
     "description": "## list of finished endpoints (work well)\n\n### \\- 💪 Auth routes\n\n- 💪 /api/auth/login\n    \n- /api/auth/register\n    \n- /api/auth/logout\n    \n- /api/auth/refresh-token\n    \n- /api/auth/forgot-password\n    \n- /api/auth/reset-password\n    \n\n### \\- \\[ \\] User routes\n\n- get /api/users/all\n    \n- get /api/users/:id\n    \n- post /api/users/\n    \n- patch /api/users/:id\n    \n- delete /api/users/:id",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "37050171"
+    "_exporter_id": "17655376"
   },
   "item": [
     {
@@ -395,7 +395,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"usernameOrEmail\": \"user@gmail.com\",\n  \"password\": \"Password@123\"  \n}",
+              "raw": "{\n  \"usernameOrEmail\": \"abdo@gmail.com\",\n  \"password\": \"HiAbdo@12\"  \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -471,7 +471,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"first_name\": \"abdo\",\n  \"last_name\": \"aboAbdo\",\n  \"username\": \"asssddaddaaasd\",\n  \"phone\": \"+966565s824926\",\n  \"email\": \"abdosadaaadasdasdasds@gmail.com\",\n  \"password\": \"HiAbdo123\",\n \"repeat_password\": \"HiAbdo123\"\n}",
+              "raw": "{\n  \"first_name\": \"abdo\",\n  \"last_name\": \"aboAbdo\",\n  \"username\": \"abdo\",\n  \"phone\": \"+966565834321\",\n  \"email\": \"abdo@gmail.com\",\n  \"password\": \"HiAbdo@12\",\n  \"password_confirmation\": \"HiAbdo@12\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -505,11 +505,21 @@
             }
           ],
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE3NGNhZDFlLWYzMTEtNDhlOS1hZDI1LTM0ZjE3NWRhODQ5OCIsInVzZXJuYW1lIjoiYWJkbyIsImVtYWlsIjoiYWJkb0BnbWFpbC5jb20iLCJpYXQiOjE3NDUxNTI2MTgsImV4cCI6MTc0NTE1NjIxOH0.pTxlJMB-CXfmzJgUyR_kgSD-5l-PpEx2cz8aWpUtX5k",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"abdo@gmail.com\",\n  \"password\": \"HiAbdo\"  \n}",
+              "raw": "{\n  \"user_id\": \"174cad1e-f311-48e9-ad25-34f175da8498\",\n  \"password\": \"HiAbdo12\"  \n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -727,7 +737,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"user_id\": \"72a53ece-5fa1-45bb-9006-fb12ac0224ca\",\n  \"token\": \"06dbb768cde861041b54904a5f622f41c09aa3f6\"\n}",
+              "raw": "{\n  \"user_id\": \"174cad1e-f311-48e9-ad25-34f175da8498\",\n  \"token\": \"8e14195be69a57b45d000cd55ce9c1d7f05d24ea\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
