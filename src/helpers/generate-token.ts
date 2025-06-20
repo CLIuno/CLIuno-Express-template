@@ -1,5 +1,4 @@
 import crypto from 'crypto'
-
 import { myDataSource } from '@/database/app-data-source'
 import { BlacklistedToken } from '@/entities/blacklistedToken.entity'
 

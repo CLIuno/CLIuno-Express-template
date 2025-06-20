@@ -1,17 +1,13 @@
-import { Exclude } from 'class-transformer'
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  OneToMany,
-  ManyToOne,
-  JoinColumn,
-  CreateDateColumn,
-  UpdateDateColumn
-} from 'typeorm'
-
 import { Role } from './role.entity'
 import { Post } from './post.entity'
+import { Vote } from './vote.entity'
+import { Comment } from './comment.entity'
+import { Exclude } from 'class-transformer'
+import { Gender } from '@/enums/gender.enum'
+import { Reaction } from './reaction.entity'
+import { Follow } from './followSystem.entity'
+import { Subscription } from './subscription.entity'
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm'
 
 @Entity('Users')
 export class User {
@@ -30,8 +26,12 @@ export class User {
   @Column('text', { nullable: true })
   date_of_birth: string
 
-  @Column('text', { nullable: true })
-  gender: string
+  @Column({
+    type: 'enum',
+    enum: Gender,
+    nullable: true
+  })
+  gender: Gender
 
   @Column('text', { nullable: true })
   nationality: string
@@ -59,35 +59,45 @@ export class User {
   is_otp_verified: boolean
 
   @Column('text', { nullable: true })
-  @Exclude()
   otp_base32: string
 
   @Column('text', { nullable: true })
-  @Exclude()
   otp_auth_url: string
 
-  @Column('text', { nullable: true })
-  @Exclude()
-  refresh_token: string
-
   @Column({ type: 'boolean', default: false })
-  @Exclude()
   is_deleted: boolean
 
-  @CreateDateColumn()
+  @Column('datetime')
   createdAt: Date
 
-  @UpdateDateColumn()
+  @Column('datetime')
   updatedAt: Date
 
   @Column('datetime', { nullable: true })
-  @Exclude()
   deletedAt: Date
 
-  @ManyToOne(() => Role, { nullable: false })
+  @ManyToOne(() => Role, (role) => role.users, { nullable: false })
   @JoinColumn({ name: 'role_id' })
-  role: Role
+  role_id: Role
 
-  @OneToMany(() => Post, (post) => post.user)
+  @OneToMany(() => Post, (post) => post.user_id)
   posts: Post[]
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[]
+
+  @OneToMany(() => Vote, (vote) => vote.user)
+  votes: Vote[]
+
+  @OneToMany(() => Reaction, (reaction) => reaction.user)
+  reactions: Reaction[]
+
+  @OneToMany(() => Follow, (follow) => follow.follower)
+  following: Follow[]
+
+  @OneToMany(() => Follow, (follow) => follow.following)
+  followers: Follow[]
+
+  @OneToMany(() => Subscription, (subscription) => subscription.user)
+  subscriptions: Subscription[]
 }

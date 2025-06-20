@@ -1,5 +1,4 @@
-const tester: RegExp =
-  /^[-!#$%&'*+/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/
+const tester: RegExp = /^[-!#$%&'*+/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
 
 export function emailValidate(email: string | null): boolean {
   if (!email) {
@@ -16,7 +15,7 @@ export function emailValidate(email: string | null): boolean {
   }
 
   // Further checking of some things regex can't handle
-  const parts: any = email.split('@')
+  const parts: string[] = email.split('@')
   if (parts[0].length > 64) {
     return false
   }

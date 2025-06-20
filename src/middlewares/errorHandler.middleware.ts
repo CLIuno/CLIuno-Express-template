@@ -1,5 +1,4 @@
 import { Request, Response } from 'express'
-
 import { CustomError } from './customError.middleware'
 import logThisError from '@/helpers/error-logger'
 

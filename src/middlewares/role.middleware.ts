@@ -1,8 +1,7 @@
-import { Request, Response, NextFunction } from 'express'
-
-import { ensureAuthenticated } from './auth.middleware'
-import { myDataSource } from '@/database/app-data-source' // Adjust the import based on your project structure
 import { User } from '@/entities/user.entity'
+import { Request, Response, NextFunction } from 'express'
+import { myDataSource } from '@/database/app-data-source' // Adjust the import based on your project structure
+import { ensureAuthenticated } from './auth.middleware'
 
 export const RoleMiddleware = {
   admin: async (req: Request, res: Response, next: NextFunction) => {

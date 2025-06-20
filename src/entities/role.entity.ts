@@ -1,7 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm'
-
 import { User } from './user.entity'
-
+import { Permission } from './permission.entity'
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm'
 @Entity('Roles')
 export class Role {
   @PrimaryGeneratedColumn('uuid')
@@ -10,12 +9,16 @@ export class Role {
   @Column('text', { nullable: false })
   name: string
 
-  @CreateDateColumn()
+  @Column('datetime', { nullable: false })
   createdAt: Date
 
-  @UpdateDateColumn()
+  @Column('datetime', { nullable: false })
   updatedAt: Date
 
-  @OneToMany(() => User, (user) => user.role)
+  //   TODO: check if the following code is necessary
+  @OneToMany(() => User, (user) => user.role_id)
   users: User[]
+
+  @OneToMany(() => Permission, (permission) => permission.role)
+  permissions: Permission[]
 }

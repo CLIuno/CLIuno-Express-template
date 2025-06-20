@@ -1,135 +1,100 @@
-import crypto from 'crypto'
 import dotenv from 'dotenv'
-import { Request, Response } from 'express'
+import crypto from 'crypto'
 import { encode } from 'hi-base32'
 import * as OTPAuth from 'otpauth'
-
-import { myDataSource } from '@/database/app-data-source'
+import { Request, Response } from 'express'
 import { User } from '@/entities/user.entity'
 import { emailValidate } from '@/helpers/email-validator'
+import { myDataSource } from '@/database/app-data-source'
 
 dotenv.config()
 
 export const OTPController = {
-  otpGenerate: async (req: Request, res: Response): Promise<void> => {
+  otpGenerate: async (req: Request, res: Response) => {
     try {
       const { usernameOrEmail } = req.body
+
       if (!usernameOrEmail) {
-        res.status(400).json({
-          status: 'error',
-          message: 'usernameOrEmail is required'
-        })
-        return
+        return res.status(400).json({ error: 'usernameOrEmail is required' })
       }
 
       const isEmail = emailValidate(usernameOrEmail)
+
       const user = await myDataSource
         .getRepository(User)
         .findOneBy(isEmail ? { email: usernameOrEmail } : { username: usernameOrEmail })
 
       if (!user) {
-        res.status(404).json({
-          status: 'error',
-          message: 'User not found'
-        })
-        return
+        return res.status(404).json({ error: 'User not found' })
       }
 
-      const base32_secret = generateBase32Secret()
+      const base32_secret: string = generateBase32Secret()
+
       const totp = new OTPAuth.TOTP({
-        issuer: process.env.FRONTEND_URL!,
+        issuer: `${process.env.FRONTEND_URL}`,
         label: user.username,
         algorithm: 'SHA1',
         digits: 6,
-        secret: base32_secret
+        secret: base32_secret!
       })
 
-      const otpauth_url = totp.toString()
+      const otpauth_url: string = totp.toString()
 
       user.otp_auth_url = otpauth_url
       user.otp_base32 = base32_secret
+
       await myDataSource.getRepository(User).save(user)
 
       res.status(200).json({
-        status: 'success',
         base32: base32_secret,
         otpauth_url
       })
     } catch (error) {
       console.error(error)
-      res.status(500).json({
-        status: 'error',
-        message: 'Internal server error'
-      })
+      return res.status(500).json({ error: 'Internal server error' })
     }
   },
-
-  otpDisable: async (req: Request, res: Response): Promise<void> => {
+  otpDisable: async (req: Request, res: Response) => {
     try {
       const { usernameOrEmail } = req.body
       if (!usernameOrEmail) {
-        res.status(400).json({
-          status: 'error',
-          message: 'usernameOrEmail is required'
-        })
-        return
+        return res.status(400).json({ error: 'usernameOrEmail is required' })
       }
-
       const isEmail = emailValidate(usernameOrEmail)
       const user = await myDataSource
         .getRepository(User)
         .findOneBy(isEmail ? { email: usernameOrEmail } : { username: usernameOrEmail })
 
       if (!user) {
-        res.status(404).json({
-          status: 'error',
-          message: 'User not found'
-        })
-        return
+        return res.status(404).json({ error: 'User not found' })
       }
-
       user.is_otp_enabled = false
       await myDataSource.getRepository(User).save(user)
-
-      res.status(200).json({
-        status: 'success',
-        message: 'OTP disabled successfully'
-      })
+      return res.status(200).json({ message: 'OTP disabled successfully' })
     } catch (error) {
       console.error(error)
-      res.status(500).json({
-        status: 'error',
-        message: 'Internal server error'
-      })
+      return res.status(500).json({ error: 'Internal server error' })
     }
   },
-
-  otpVerify: async (req: Request, res: Response): Promise<void> => {
+  otpVerify: async (req: Request, res: Response) => {
     try {
       const { usernameOrEmail, token } = req.body
       if (!usernameOrEmail) {
-        res.status(400).json({
-          status: 'error',
-          message: 'usernameOrEmail is required'
-        })
-        return
+        return res.status(400).json({ error: 'usernameOrEmail is required' })
       }
-
       const isEmail = emailValidate(usernameOrEmail)
       const user = await myDataSource
         .getRepository(User)
         .findOneBy(isEmail ? { email: usernameOrEmail } : { username: usernameOrEmail })
 
       if (!user) {
-        res.status(404).json({
-          status: 'error',
-          message: 'Token is invalid or user does not exist'
-        })
-        return
+        return res.status(404).json({ error: 'Token is invalid or user does not exist' })
       }
 
+      // verify the token
+
       const totp = new OTPAuth.TOTP({
-        issuer: process.env.FRONTEND_URL!,
+        issuer: `${process.env.FRONTEND_URL}`,
         label: user.username,
         algorithm: 'SHA1',
         digits: 6,
@@ -137,65 +102,44 @@ export const OTPController = {
       })
 
       const delta = totp.validate({ token })
+
       if (delta === null) {
-        res.status(401).json({
-          status: 'error',
-          message: 'Authentication failed'
-        })
-        return
+        return res.status(401).json({ error: 'Authentication failed' })
       }
 
+      // update the user status
       user.is_otp_verified = true
       user.is_otp_enabled = true
       await myDataSource.getRepository(User).save(user)
 
-      res.status(200).json({
-        status: 'success',
-        message: 'OTP verified successfully'
-      })
+      return res.status(200).json({ message: 'OTP verified successfully' })
     } catch (error) {
       console.error(error)
-      res.status(500).json({
-        status: 'error',
-        message: 'Internal server error'
-      })
+      return res.status(500).json({ error: 'Internal server error' })
     }
   },
-
-  otpValidate: async (req: Request, res: Response): Promise<void> => {
+  otpValidate: async (req: Request, res: Response) => {
     try {
       const { usernameOrEmail, token } = req.body
       if (!usernameOrEmail) {
-        res.status(400).json({
-          status: 'error',
-          message: 'usernameOrEmail is required'
-        })
-        return
+        return res.status(400).json({ error: 'usernameOrEmail is required' })
       }
-
       const isEmail = emailValidate(usernameOrEmail)
       const user = await myDataSource
         .getRepository(User)
         .findOneBy(isEmail ? { email: usernameOrEmail } : { username: usernameOrEmail })
 
       if (!user) {
-        res.status(404).json({
-          status: 'error',
-          message: 'User not found'
-        })
-        return
+        return res.status(404).json({ error: 'User not found' })
       }
-
       if (!user.is_otp_enabled) {
-        res.status(400).json({
-          status: 'error',
-          message: 'OTP is not enabled for this user'
-        })
-        return
+        res.status(400).json({ error: 'OTP is not enabled for this user' })
+        return false
       }
 
+      //  verify the token
       const totp = new OTPAuth.TOTP({
-        issuer: process.env.FRONTEND_URL!,
+        issuer: `${process.env.FRONTEND_URL}`,
         label: user.username,
         algorithm: 'SHA1',
         digits: 6,
@@ -203,29 +147,21 @@ export const OTPController = {
       })
 
       const delta = totp.validate({ token, window: 1 })
+
       if (delta === null) {
-        res.status(401).json({
-          status: 'error',
-          message: 'Invalid token'
-        })
-        return
+        return res.status(401).json({ error: 'Invalid token' })
       }
 
-      res.status(200).json({
-        status: 'success',
-        message: 'Token is valid'
-      })
+      return res.status(200).json({ message: 'Token is valid' })
     } catch (error) {
       console.error(error)
-      res.status(500).json({
-        status: 'error',
-        message: 'Internal server error'
-      })
+      res.status(500).json({ error: 'Internal server error' })
+      return false
     }
   }
 }
 
-const generateBase32Secret = (): string => {
+const generateBase32Secret = () => {
   const buffer = crypto.randomBytes(15)
   return encode(buffer).replace(/=/g, '').substring(0, 24)
 }

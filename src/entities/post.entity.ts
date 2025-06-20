@@ -1,14 +1,16 @@
+import { User } from './user.entity'
+import { Vote } from './vote.entity'
+import { Comment } from './comment.entity'
+import { Category } from './category.entity'
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
-  JoinColumn,
-  CreateDateColumn,
-  UpdateDateColumn
+  ManyToMany,
+  OneToMany,
+  JoinColumn
 } from 'typeorm'
-
-import { User } from './user.entity'
 
 @Entity('Posts')
 export class Post {
@@ -24,10 +26,10 @@ export class Post {
   @Column('text')
   imageUrl: string
 
-  @CreateDateColumn()
+  @Column('datetime')
   createdAt: Date
 
-  @UpdateDateColumn()
+  @Column('datetime')
   updatedAt: Date
 
   @Column({ type: 'boolean', default: false })
@@ -35,5 +37,14 @@ export class Post {
 
   @ManyToOne(() => User, (user) => user.posts, { nullable: false })
   @JoinColumn({ name: 'user_id' })
-  user: User
+  user_id: User
+
+  @ManyToMany(() => Category, (category) => category.posts, { nullable: true })
+  categories: Category[]
+
+  @OneToMany(() => Comment, (comment) => comment.post)
+  comments: Comment[]
+
+  @OneToMany(() => Vote, (vote) => vote.post)
+  votes: Vote[]
 }

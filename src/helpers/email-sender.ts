@@ -1,7 +1,6 @@
 import dotenv from 'dotenv'
 import mailer from 'nodemailer'
 
-import logThisError from '@/helpers/error-logger'
 interface MailOptions {
   from: any
   to: string
@@ -67,13 +66,13 @@ const SEND = async (emailType: string, to: string, token: string, userId: string
     {
       ...mailOptions,
       to,
-      html: mailOptions.templates[emailType]?.replace('token=', `token=${token}&userId=${userId}`) || ''
+      html: mailOptions.templates[emailType].replace('token=', `token=${token}&userId=${userId}`)
     },
     (error, info) => {
       if (!error) {
-        logThisError(`Email sent: ${info.response}`)
+        console.log(`Email sent: ${info.response}`)
       } else {
-        logThisError(`Error sending email: ${error}`)
+        console.error(`Error sending email: ${error}`)
       }
       smtp.close()
     }

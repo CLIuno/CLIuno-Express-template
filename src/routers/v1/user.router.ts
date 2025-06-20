@@ -1,28 +1,23 @@
-import { Router } from 'express'
+import express from 'express'
 import { UserController } from '@/controllers/user.controller'
-import { ensureAuthenticated } from '@/middlewares/auth.middleware'
 import { RoleMiddleware } from '@/middlewares/role.middleware'
+import { ensureAuthenticated } from '@/middlewares/auth.middleware'
 
-const router: Router = Router()
+const router = express.Router()
+// add ensureAuthenticated later
+router.get('/all', RoleMiddleware.admin, UserController.getAll)
 
-// Authenticated User Routes
-router.use(ensureAuthenticated)
-router.get('/current', UserController.getCurrent)
-router.patch('/current', UserController.updateCurrent)
-router.delete('/current', UserController.deleteCurrent)
-router.get('/username/:username', UserController.getByUsername)
-router.get('/posts', UserController.getPostsByUserId)
-router.get('/role', UserController.getRolesByUserId)
-router.get('/:id', UserController.getById)
+router.get('/:id', ensureAuthenticated, UserController.getById)
 
-// 🔐 Admin Routes
-router.get('/', RoleMiddleware.admin, UserController.getAll)
-router.patch('/:id', RoleMiddleware.admin, UserController.update)
-router.delete('/:id', RoleMiddleware.admin, UserController.delete)
+router.get('/username/:username', ensureAuthenticated, UserController.getByUsername)
 
-// Catch-all or duplicated handler fix
+router.patch('/:id', ensureAuthenticated, UserController.update)
+
+router.patch('/:id', ensureAuthenticated, UserController.delete)
+
+// Handle invalid request for the original path
 router.get('/', (req, res) => {
-  res.status(400).json({ status: 'warning', message: 'Invalid request' })
+  res.status(400).send('Invalid request')
 })
 
 export default router

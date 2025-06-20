@@ -1,5 +1,5 @@
-import { Request } from 'express'
 import Joi from 'joi'
+import { Request } from 'express'
 
 const schema = Joi.object({
   first_name: Joi.string().required(),
@@ -10,7 +10,7 @@ const schema = Joi.object({
     .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
     .required(),
   password: Joi.string().min(8).max(32),
-  password_confirmation: Joi.ref('password')
+  repeat_password: Joi.ref('password')
 })
 
 export async function ValidateRegister(req: Request) {

@@ -1,24 +1,23 @@
 import { Router } from 'express'
-
-import authRouter from './v1/auth.router'
-import postRouter from './v1/post.router'
-import roleRouter from './v1/role.router'
 import userRouter from './v1/user.router'
+import authRouter from './v1/auth.router'
+import roleRouter from './v1/role.router'
+import permissionRouter from './v1/permission.router'
+import userRolePermissionRouter from './v1/userRolePermission.router'
 
 // Create a new router instance
-const router: Router = Router()
+const router = Router()
 
-// Auth Router
+// Add the routers to the main router
+router.use('/user', userRouter)
 router.use('/auth', authRouter)
 
-// User Router
-router.use('/users', userRouter)
+// Permission Router
+router.use('/permission', permissionRouter)
 
 // Role Router
-router.use('/roles', roleRouter)
-
-// Post Router
-router.use('/posts', postRouter)
+router.use('/role', roleRouter)
+router.use('/user-role-permission', userRolePermissionRouter)
 
 // Export the main router
 export default router
