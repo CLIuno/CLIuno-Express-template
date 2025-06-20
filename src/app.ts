@@ -1,6 +1,5 @@
 import { createServer } from 'http'
 import path from 'path'
-import { fileURLToPath } from 'url'
 
 import cors from 'cors'
 import dotenv from 'dotenv'
@@ -18,8 +17,6 @@ dotenv.config()
 // Create an Express application
 const APP: Express = express()
 const PORT = process.env.PORT || 3000
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
 
 APP.use(express.json())
 APP.set('trust proxy', 1) // Trust first proxy
@@ -30,27 +27,18 @@ APP.use(
     resave: false,
     cookie: {
       maxAge: 86400000,
-      httpOnly: true
+      httpOnly: true // Ensure to not expose session cookies to clientside scripts
     }
   })
 )
 
 if (process.env.NODE_ENV === 'development') {
-  APP.use(morgan('dev'))
-  APP.use(
-    cors({
-      origin: '*'
-    })
-  )
+  APP.use(morgan('dev')) // Add morgan middleware for logging
+  APP.use(cors())
 }
 
 if (process.env.NODE_ENV === 'production') {
-  APP.use(helmet())
-  APP.use(
-    cors({
-      origin: process.env.APP_URL
-    })
-  )
+  APP.use(helmet()) // Add helmet middleware for security
 }
 
 APP.use(`/api/${process.env.API_VERSION}`, router)

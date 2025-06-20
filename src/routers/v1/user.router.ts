@@ -1,28 +1,32 @@
-import { Router } from 'express'
+import express from 'express'
+
 import { UserController } from '@/controllers/user.controller'
 import { ensureAuthenticated } from '@/middlewares/auth.middleware'
 import { RoleMiddleware } from '@/middlewares/role.middleware'
 
-const router: Router = Router()
-
-// Authenticated User Routes
-router.use(ensureAuthenticated)
+const router = express.Router()
+// add ensureAuthenticated later
 router.get('/current', UserController.getCurrent)
-router.patch('/current', UserController.updateCurrent)
-router.delete('/current', UserController.deleteCurrent)
-router.get('/username/:username', UserController.getByUsername)
-router.get('/posts', UserController.getPostsByUserId)
-router.get('/role', UserController.getRolesByUserId)
-router.get('/:id', UserController.getById)
 
-// 🔐 Admin Routes
+router.get('/username/:username', ensureAuthenticated, UserController.getByUsername)
+
 router.get('/', RoleMiddleware.admin, UserController.getAll)
-router.patch('/:id', RoleMiddleware.admin, UserController.update)
-router.delete('/:id', RoleMiddleware.admin, UserController.delete)
 
-// Catch-all or duplicated handler fix
+router.get('/:id', ensureAuthenticated, UserController.getById)
+
+router.patch('/:id', ensureAuthenticated, UserController.update)
+
+router.delete('/:id', ensureAuthenticated, UserController.delete)
+
+router.get(':user_id/posts', ensureAuthenticated, UserController.getPostsByUserId)
+
+router.get(':user_id/roles', ensureAuthenticated, UserController.getRolesByUserId)
+
+router.get(':user_id/comments', ensureAuthenticated, UserController.getCommentsByUserId)
+
+// Handle invalid request for the original path
 router.get('/', (req, res) => {
-  res.status(400).json({ status: 'warning', message: 'Invalid request' })
+  res.status(400).send('Invalid request')
 })
 
 export default router

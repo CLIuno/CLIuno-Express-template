@@ -1,17 +1,9 @@
 import { Exclude } from 'class-transformer'
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  OneToMany,
-  ManyToOne,
-  JoinColumn,
-  CreateDateColumn,
-  UpdateDateColumn
-} from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm'
 
-import { Role } from './role.entity'
+import { Comment } from './comment.entity'
 import { Post } from './post.entity'
+import { Role } from './role.entity'
 
 @Entity('Users')
 export class User {
@@ -59,35 +51,30 @@ export class User {
   is_otp_verified: boolean
 
   @Column('text', { nullable: true })
-  @Exclude()
   otp_base32: string
 
   @Column('text', { nullable: true })
-  @Exclude()
   otp_auth_url: string
 
-  @Column('text', { nullable: true })
-  @Exclude()
-  refresh_token: string
-
   @Column({ type: 'boolean', default: false })
-  @Exclude()
   is_deleted: boolean
 
-  @CreateDateColumn()
+  @Column('datetime')
   createdAt: Date
 
-  @UpdateDateColumn()
+  @Column('datetime')
   updatedAt: Date
 
   @Column('datetime', { nullable: true })
-  @Exclude()
   deletedAt: Date
 
-  @ManyToOne(() => Role, { nullable: false })
+  @ManyToOne(() => Role, (role) => role.users, { nullable: false })
   @JoinColumn({ name: 'role_id' })
-  role: Role
+  role_id: Role
 
-  @OneToMany(() => Post, (post) => post.user)
+  @OneToMany(() => Post, (post) => post.user_id)
   posts: Post[]
+
+  @OneToMany(() => Comment, (comment) => comment.user)
+  comments: Comment[]
 }

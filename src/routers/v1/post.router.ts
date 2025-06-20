@@ -1,29 +1,31 @@
-import { Router } from 'express'
+import express from 'express'
 
 import { PostController } from '@/controllers/post.controller'
 import { ensureAuthenticated } from '@/middlewares/auth.middleware'
 
-const router: Router = Router()
+const router = express.Router()
+//  Post Router
 
-//  All routes require authentication
-router.use(ensureAuthenticated)
-
-//  Posts for current user
+// get current user's posts
 router.get('/current-user', PostController.getCurrentUserPosts)
 
-//  Post CRUD
-router.get('/', PostController.getAll)
-router.get('/:id', PostController.getById)
-router.post('/', PostController.create)
-router.patch('/:id', PostController.update)
-router.delete('/:id', PostController.delete)
+router.get('/', ensureAuthenticated, PostController.getAll)
 
-//  Get user by post ID
-router.get('/:post_id/user', PostController.getUserByPostId)
+router.get('/:id', ensureAuthenticated, PostController.getById)
 
-// Catch invalid requests
+router.post('/', ensureAuthenticated, PostController.create)
+
+router.patch('/:id', ensureAuthenticated, PostController.update)
+
+router.delete('/:id', ensureAuthenticated, PostController.delete)
+
+router.get('/:post_id/user', ensureAuthenticated, PostController.getUserByPostId)
+
+router.get('/:post_id/comments', ensureAuthenticated, PostController.getCommentsByPostId)
+
+// Handle invalid request for the original path
 router.get('/', (req, res) => {
-  res.status(400).json({ status: 'warning', message: 'Invalid request' })
+  res.status(400).send('Invalid request')
 })
 
 export default router

@@ -2,190 +2,126 @@ import { Request, Response } from 'express'
 import jwt, { Secret } from 'jsonwebtoken'
 
 import { myDataSource } from '@/database/app-data-source'
+import { Comment } from '@/entities/comment.entity'
 import { Post } from '@/entities/post.entity'
 import { User } from '@/entities/user.entity'
-import logThisError from '@/helpers/error-logger'
 
 export const PostController = {
-  getCurrentUserPosts: async (req: Request, res: Response): Promise<void> => {
+  getCurrentUserPosts: async (req: Request, res: Response) => {
     const authHeader = req.headers.authorization
     if (!authHeader) {
-      res.status(401).json({
-        status: 'error',
-        message: 'No token provided'
-      })
-      return
+      return res.status(401).send({ error: 'No token provided' })
     }
-
     const parts = authHeader.split(' ')
     if (parts.length !== 2) {
-      res.status(401).json({ status: 'error', message: 'Token error' })
-      return
+      return res.status(401).send({ error: 'Token error' })
     }
-
     const [scheme, token] = parts
-    if (!scheme || !/^Bearer$/i.test(scheme)) {
-      res.status(401).json({
-        status: 'error',
-        message: 'Token malformatted'
-      })
-      return
+    if (!/^Bearer$/i.test(scheme)) {
+      return res.status(401).send({ error: 'Token malformatted' })
     }
 
     try {
-      const decoded = jwt.verify(token as string, process.env.JWT_SECRET_KEY as Secret, { ignoreExpiration: true }) as {
-        id: string
-      }
+      // Verify and decode the token
+      const decoded = jwt.verify(token, process.env.SECRET_KEY as Secret, {
+        ignoreExpiration: true
+      }) as any
 
-      const user = await myDataSource.getRepository(User).findOneBy({ id: decoded.id })
+      // Fetch the user from the database
+      const user = await myDataSource.getRepository(User).findOneBy({
+        id: decoded.id
+      })
 
       if (!user) {
-        res.status(404).json({
-          status: 'error',
-          message: 'User not found'
-        })
-        return
+        return res.status(404).send({ message: 'User not found' })
       }
 
+      // Fetch the posts associated with the user
       const posts = await myDataSource.getRepository(Post).find({
-        where: { user: { id: user.id } }
+        where: { user_id: decoded.id }
       })
 
-      res.status(200).json({
+      return res.status(200).json({
         status: 'success',
         message: 'User posts fetched successfully',
-        data: { posts }
+        data: posts
       })
     } catch (error) {
-      logThisError(error)
-      res.status(401).json({ status: 'error', message: 'Invalid token' })
+      return res.status(401).send({ message: 'Invalid token' })
     }
   },
-
-  getAll: async (req: Request, res: Response): Promise<void> => {
-    const posts = await myDataSource.getRepository(Post).find()
-    res.status(200).json({
-      status: 'success',
-      message: 'Posts fetched successfully',
-      data: { posts }
-    })
+  getAll: async (req: Request, res: Response) => {
+    const results = await myDataSource.getRepository(Post).find()
+    return res.send(results)
   },
-
-  getById: async (req: Request, res: Response): Promise<void> => {
-    const post = await myDataSource.getRepository(Post).findOneBy({
+  getById: async (req: Request, res: Response) => {
+    const results = await myDataSource.getRepository(Post).findOneBy({
       id: req.params.id
     })
-
-    if (!post) {
-      res.status(404).json({
-        status: 'error',
-        message: 'Post not found'
-      })
-      return
-    }
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Post fetched successfully',
-      data: { post }
-    })
+    return res.send(results)
   },
-
-  create: async (req: Request, res: Response): Promise<void> => {
-    const { title, content } = req.body
-
+  create: async (req: Request, res: Response) => {
+    const { title, content } = req.body // Assuming 'title' and 'content' are fields for the post
     if (!title || !content) {
-      res.status(400).json({
-        status: 'error',
-        message: 'Title and Content are required'
-      })
-      return
+      return res.status(400).json({ message: 'Title and Content are required' })
     }
-
+    // Create and save the new post
     const post = myDataSource.getRepository(Post).create({ title, content })
-    const result = await myDataSource.getRepository(Post).save(post)
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Post created successfully',
-      data: { result }
-    })
+    const results = await myDataSource.getRepository(Post).save(post)
+    return res.send(results)
   },
-
-  update: async (req: Request, res: Response): Promise<void> => {
+  update: async (req: Request, res: Response) => {
     const post = await myDataSource.getRepository(Post).findOneBy({
       id: req.params.id
     })
-
-    if (!post) {
-      res.status(404).json({
-        status: 'error',
-        message: 'Post not found'
-      })
-      return
-    }
-
-    myDataSource.getRepository(Post).merge(post, req.body)
-    await myDataSource.getRepository(Post).save(post)
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Post updated successfully'
-    })
+    myDataSource.getRepository(Post).merge(post as any, req.body)
+    const results = await myDataSource.getRepository(Post).save(post as any)
+    return res.send(results)
   },
-
-  delete: async (req: Request, res: Response): Promise<void> => {
-    if (!req.params.id) {
-      res.status(400).json({
-        status: 'error',
-        message: 'Post ID is required'
-      })
-      return
-    }
-    const result = await myDataSource.getRepository(Post).delete(req.params.id)
-
-    if (result.affected === 0) {
-      res.status(404).json({
-        status: 'error',
-        message: 'Post not found or already deleted'
-      })
-      return
-    }
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Post deleted successfully'
-    })
+  delete: async (req: Request, res: Response) => {
+    const results = await myDataSource.getRepository(Post).delete(req.params.id)
+    return res.send(results)
   },
-
-  getUserByPostId: async (req: Request, res: Response): Promise<void> => {
+  getUserByPostId: async (req: Request, res: Response) => {
     const { post_id } = req.body
-
     if (!post_id) {
-      res.status(400).json({
-        status: 'error',
-        message: 'Post ID is required'
-      })
-      return
+      return res.status(400).json({ message: 'Post ID is required' })
     }
 
-    const post = await myDataSource.getRepository(Post).findOne({
-      where: { id: post_id },
-      relations: ['user']
+    const post = await myDataSource.getRepository(Post).findOneBy({
+      id: post_id
     })
-
     if (!post) {
-      res.status(404).json({
-        status: 'error',
-        message: 'Post not found'
-      })
-      return
+      return res.status(404).json({ message: 'Post not found' })
     }
-
-    res.status(200).json({
+    const user = await myDataSource.getRepository(User).findOneBy({
+      posts: post.user_id
+    })
+    return res.status(200).json({
       status: 'success',
       message: 'User found',
-      data: { user: post.user }
+      data: user
+    })
+  },
+  getCommentsByPostId: async (req: Request, res: Response) => {
+    const { post_id } = req.body
+    if (!post_id) {
+      return res.status(400).json({ message: 'Post ID is required' })
+    }
+
+    const post = await myDataSource.getRepository(Post).findOneBy({
+      id: post_id
+    })
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' })
+    }
+    const comments = await myDataSource.getRepository(Comment).find({
+      where: { post: post_id }
+    })
+    return res.status(200).json({
+      status: 'success',
+      message: 'Comments found',
+      data: comments
     })
   }
 }

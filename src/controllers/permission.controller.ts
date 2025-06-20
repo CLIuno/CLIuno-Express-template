@@ -1,0 +1,74 @@
+import { Request, Response } from 'express'
+
+import { myDataSource } from '@/database/app-data-source'
+import { Permission } from '@/entities/permission.entity'
+import { Role } from '@/entities/role.entity'
+
+export const PermissionController = {
+  getAll: async (req: Request, res: Response) => {
+    const results = await myDataSource.getRepository(Permission).find()
+    return res.send(results)
+  },
+  getById: async (req: Request, res: Response) => {
+    const results = await myDataSource.getRepository(Permission).findOneBy({
+      id: req.params.id
+    })
+    return res.send(results)
+  },
+  create: async (req: Request, res: Response) => {
+    const { name } = req.body // Assuming 'name' is the unique field for the permission
+
+    // Check if the permission already exists
+    const existingPermission = await myDataSource.getRepository(Permission).findOneBy({ name })
+
+    if (existingPermission) {
+      return res.status(400).json({ message: 'Permission already exists' })
+    }
+
+    // Create and save the new permission
+    const permission = myDataSource.getRepository(Permission).create(req.body)
+    const results = await myDataSource.getRepository(Permission).save(permission)
+
+    return res.status(201).json(results) // Return the created permission with a 201 status code
+  },
+  update: async (req: Request, res: Response) => {
+    const permission = await myDataSource.getRepository(Permission).findOneBy({
+      id: req.params.id
+    })
+    myDataSource.getRepository(Permission).merge(permission as any, req.body)
+    const results = await myDataSource.getRepository(Permission).save(permission as any)
+    return res.send(results)
+  },
+  delete: async (req: Request, res: Response) => {
+    const results = await myDataSource.getRepository(Permission).delete(req.params.id)
+    return res.send(results)
+  },
+  getRolesByPermissionId: async (req: Request, res: Response) => {
+    const { permission_id } = req.body
+    if (!permission_id) {
+      return res.status(400).json({ message: 'Permission ID is required' })
+    }
+
+    const results = await myDataSource.getRepository(Permission).findOneBy({
+      id: permission_id
+    })
+
+    if (!results) {
+      return res.status(404).json({ message: 'Permission not found' })
+    }
+
+    const roles = await myDataSource.getRepository(Role).find({
+      where: { permissions: permission_id }
+    })
+
+    if (!roles) {
+      return res.status(404).json({ message: 'Roles not found' })
+    }
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Roles found',
+      data: roles
+    })
+  }
+}

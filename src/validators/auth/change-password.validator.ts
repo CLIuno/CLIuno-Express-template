@@ -4,7 +4,7 @@ import Joi from 'joi'
 const schema = Joi.object({
   user_id: Joi.string().required(),
   password: Joi.string().min(8).max(32),
-  password_confirmation: Joi.ref('password')
+  repeat_password: Joi.ref('password')
 })
 
 export async function ValidateChangePassword(req: Request) {

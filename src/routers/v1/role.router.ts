@@ -1,26 +1,27 @@
-import { Router } from 'express'
+import express from 'express'
 
 import { RoleController } from '@/controllers/role.controller'
 import { RoleMiddleware } from '@/middlewares/role.middleware'
 
-const router: Router = Router()
+const router = express.Router()
+// register routes
+router.get('/', RoleMiddleware.admin, RoleController.getAll)
 
-// All routes require admin access
-router.use(RoleMiddleware.admin)
+router.get('/:id', RoleMiddleware.admin, RoleController.getById)
 
-// Role CRUD
-router.get('/', RoleController.getAll)
-router.get('/:id', RoleController.getById)
-router.post('/', RoleController.create)
-router.patch('/:id', RoleController.update)
-router.delete('/:id', RoleController.delete)
+router.post('/', RoleMiddleware.admin, RoleController.create)
 
-// Users by Role
-router.get('/:role_id/users', RoleController.getUsersByRoleId)
+router.patch('/:id', RoleMiddleware.admin, RoleController.update)
 
-// Fallback for invalid request
+router.delete('/:id', RoleMiddleware.admin, RoleController.delete)
+
+router.get('/:role_id/permissions', RoleMiddleware.admin, RoleController.getPermissionsByRoleId)
+
+router.get('/:role_id/users', RoleMiddleware.admin, RoleController.getUsersByRoleId)
+
+// Handle invalid request for the original path
 router.get('/', (req, res) => {
-  res.status(400).json({ status: 'warning', message: 'Invalid request' })
+  res.status(400).send('Invalid request')
 })
 
 export default router

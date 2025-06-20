@@ -67,7 +67,7 @@ const SEND = async (emailType: string, to: string, token: string, userId: string
     {
       ...mailOptions,
       to,
-      html: mailOptions.templates[emailType]?.replace('token=', `token=${token}&userId=${userId}`) || ''
+      html: mailOptions.templates[emailType].replace('token=', `token=${token}&userId=${userId}`)
     },
     (error, info) => {
       if (!error) {
