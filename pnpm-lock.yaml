@@ -69,8 +69,8 @@ importers:
         specifier: ^1.10.0
         version: 1.10.0
       nodemailer:
-        specifier: ^6.10.1
-        version: 6.10.1
+        specifier: ^7.0.3
+        version: 7.0.3
       otpauth:
         specifier: ^9.4.0
         version: 9.4.0
@@ -160,8 +160,8 @@ importers:
         specifier: ^3.1.10
         version: 3.1.10
       prettier:
-        specifier: ^3.5.3
-        version: 3.5.3
+        specifier: ^3.6.0
+        version: 3.6.0
       tailwindcss:
         specifier: ^4.1.10
         version: 4.1.10
@@ -3081,8 +3081,8 @@ packages:
   node-releases@2.0.19:
     resolution: {integrity: sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==}
 
-  nodemailer@6.10.1:
-    resolution: {integrity: sha512-Z+iLaBGVaSjbIzQ4pX6XV41HrooLsQ10ZWPUehGmuantvzWoDVBnmsdUcOIDM1t+yPor5pDhVlDESgOMEGxhHA==}
+  nodemailer@7.0.3:
+    resolution: {integrity: sha512-Ajq6Sz1x7cIK3pN6KesGTah+1gnwMnx5gKl3piQlQQE/PwyJ4Mbc8is2psWYxK3RJTVeqsDaCv8ZzXLCDHMTZw==}
     engines: {node: '>=6.0.0'}
 
   nodemon@3.1.10:
@@ -3338,8 +3338,8 @@ packages:
     engines: {node: '>=10.13.0'}
     hasBin: true
 
-  prettier@3.5.3:
-    resolution: {integrity: sha512-QQtaxnoDJeAkDvDKWCLiwIXkTgRhwYDEQCghU9Z6q03iyek/rxRh/2lC3HB7P8sWT2xC/y5JDctPLBIGzHKbhw==}
+  prettier@3.6.0:
+    resolution: {integrity: sha512-ujSB9uXHJKzM/2GBuE0hBOUgC77CN3Bnpqa+g80bkv3T3A93wL/xlzDATHhnhkzifz/UE2SNOvmbTz5hSkDlHw==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -7580,7 +7580,7 @@ snapshots:
 
   node-releases@2.0.19: {}
 
-  nodemailer@6.10.1: {}
+  nodemailer@7.0.3: {}
 
   nodemon@3.1.10:
     dependencies:
@@ -7822,7 +7822,7 @@ snapshots:
 
   prettier@2.8.8: {}
 
-  prettier@3.5.3: {}
+  prettier@3.6.0: {}
 
   pretty-format@29.7.0:
     dependencies:
