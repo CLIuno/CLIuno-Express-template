@@ -25,7 +25,7 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^11.10.0",
-    "body-parser": "^2.2.0",
+    "body-parser": "^2.2.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "cors": "^2.8.5",
