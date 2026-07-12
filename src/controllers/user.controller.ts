@@ -5,7 +5,6 @@ import jwt, { Secret } from 'jsonwebtoken'
 
 import { myDataSource } from '@/database/app-data-source'
 import { Post } from '@/entities/post.entity'
-import { Role } from '@/entities/role.entity'
 import { User } from '@/entities/user.entity'
 import logThisError from '@/helpers/error-logger'
 
@@ -49,7 +48,7 @@ export const UserController = {
         const transformed = plainToInstance(User, users, {
             excludeExtraneousValues: false,
         })
-        res.status(200).json({ status: 'success', data: transformed })
+        res.status(200).json({ status: 'success', data: { users: transformed } })
     },
 
     getById: async (req: Request, res: Response) => {
@@ -61,11 +60,12 @@ export const UserController = {
                 status: 'warning',
                 message: 'User not found',
             })
+            return
         }
         const transformed = plainToInstance(User, user, {
             excludeExtraneousValues: false,
         })
-        res.status(200).json({ status: 'success', data: transformed })
+        res.status(200).json({ status: 'success', data: { user: transformed } })
     },
 
     getCurrent: async (req: Request, res: Response) => {
@@ -78,12 +78,13 @@ export const UserController = {
                 status: 'warning',
                 message: 'User not found',
             })
+            return
         }
 
         const transformed = plainToInstance(User, user, {
             excludeExtraneousValues: false,
         })
-        res.status(200).json({ status: 'success', data: transformed })
+        res.status(200).json({ status: 'success', data: { user: transformed } })
     },
 
     getByUsername: async (req: Request, res: Response) => {
@@ -95,11 +96,12 @@ export const UserController = {
                 status: 'warning',
                 message: 'User not found',
             })
+            return
         }
         const transformed = plainToInstance(User, user, {
             excludeExtraneousValues: false,
         })
-        res.status(200).json({ status: 'success', data: transformed })
+        res.status(200).json({ status: 'success', data: { user: transformed } })
     },
 
     updateCurrent: async (req: Request, res: Response) => {
@@ -115,6 +117,7 @@ export const UserController = {
                     status: 'warning',
                     message: 'User not found',
                 })
+                return
             }
 
             repo.merge(user as any, req.body)
@@ -126,7 +129,7 @@ export const UserController = {
             res.status(200).json({
                 status: 'success',
                 message: 'User updated',
-                data: { transformed },
+                data: { user: transformed },
             })
         } catch (error) {
             console.error(error)
@@ -147,6 +150,7 @@ export const UserController = {
                     status: 'warning',
                     message: 'User not found',
                 })
+                return
             }
 
             repo.merge(user as any, req.body)
@@ -155,7 +159,7 @@ export const UserController = {
                 excludeExtraneousValues: false,
             })
 
-            res.status(200).json({ status: 'success', data: transformed })
+            res.status(200).json({ status: 'success', data: { user: transformed } })
         } catch (error) {
             console.error(error)
             res.status(500).json({
@@ -190,7 +194,7 @@ export const UserController = {
             res.status(200).json({
                 status: 'success',
                 message: 'User deleted',
-                data: { transformed },
+                data: { user: transformed },
             })
         } catch (error) {
             console.error(error)
@@ -220,7 +224,7 @@ export const UserController = {
                 excludeExtraneousValues: false,
             })
 
-            res.status(200).json({ status: 'success', data: transformed })
+            res.status(200).json({ status: 'success', data: { user: transformed } })
         } catch (error) {
             console.error(error)
             res.status(500).json({
@@ -231,27 +235,29 @@ export const UserController = {
     },
 
     getPostsByUserId: async (req: Request, res: Response) => {
-        const { user_id } = req.body
+        const userId = req.params.id as string
 
-        if (!user_id) {
+        if (!userId) {
             res.status(400).json({
                 status: 'warning',
                 message: 'User ID is required',
             })
+            return
         }
 
         try {
-            const user = await myDataSource.getRepository(User).findOneBy({ id: user_id })
+            const user = await myDataSource.getRepository(User).findOneBy({ id: userId })
             if (!user) {
                 res.status(404).json({
                     status: 'warning',
                     message: 'User not found',
                 })
+                return
             }
 
             const posts = await myDataSource.getRepository(Post).find({
-                where: { user: user_id },
-                relations: ['user_id'],
+                where: { user: { id: userId } },
+                relations: ['user'],
             })
 
             res.status(200).json({
@@ -269,30 +275,33 @@ export const UserController = {
     },
 
     getRolesByUserId: async (req: Request, res: Response) => {
-        const { user_id } = req.body
+        const userId = req.params.id as string
 
-        if (!user_id) {
+        if (!userId) {
             res.status(400).json({
                 status: 'warning',
                 message: 'User ID is required',
             })
+            return
         }
 
         try {
-            const user = await myDataSource.getRepository(User).findOneBy({ id: user_id })
+            const user = await myDataSource.getRepository(User).findOne({
+                where: { id: userId },
+                relations: ['role'],
+            })
             if (!user) {
                 res.status(404).json({
                     status: 'warning',
                     message: 'User not found',
                 })
+                return
             }
-
-            const role = await myDataSource.getRepository(Role).findOneBy({ id: user_id })
 
             res.status(200).json({
                 status: 'success',
                 message: 'Role found',
-                data: { role },
+                data: { role: user.role },
             })
         } catch (error) {
             console.error(error)

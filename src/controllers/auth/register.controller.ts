@@ -24,6 +24,7 @@ export default async function RegisterController(req: Request, res: Response) {
                 status: 'warning',
                 message: 'Invalid email address',
             })
+            return
         }
 
         const userExists = await myDataSource.getRepository(User).findOne({
@@ -35,20 +36,17 @@ export default async function RegisterController(req: Request, res: Response) {
                 status: 'warning',
                 message: 'User already exists',
             })
+            return
         }
 
         const hashedPassword = await bcrypt.hash(req.body.password, saltRounds)
 
-        const role = await myDataSource.getRepository(Role).findOne({
+        // Default role is created on first use so a fresh install works out of the box
+        const roleRepository = myDataSource.getRepository(Role)
+        let role = await roleRepository.findOne({
             where: [{ name: 'user' }],
         })
-
-        if (!role) {
-            res.status(400).json({
-                status: 'error',
-                message: 'Role does not exist',
-            })
-        }
+        role ??= await roleRepository.save(roleRepository.create({ name: 'user' }))
 
         const newUser: any = myDataSource.getRepository(User).create({
             ...req.body,

@@ -17,7 +17,7 @@ export const RoleMiddleware = {
                 const userRepository = myDataSource.getRepository(User)
                 const user: any = await userRepository.findOne({
                     where: { id: (req as any).user.id },
-                    relations: ['role_id'], // Adjust based on your actual relation
+                    relations: ['role'],
                 })
 
                 if (!user) {
@@ -25,7 +25,7 @@ export const RoleMiddleware = {
                 }
 
                 // Check if the user's role matches the required role
-                if (user.role_id.id !== '63c01504-e21e-4a8f-8f5f-e49eb5231529') {
+                if (user.role?.name !== 'admin') {
                     return res.status(403).send({ error: 'Forbidden: Permission denied' })
                 }
 

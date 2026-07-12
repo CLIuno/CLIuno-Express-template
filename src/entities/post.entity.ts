@@ -23,8 +23,8 @@ export class Post {
     @Column('text')
     content: string
 
-    @Column('text')
-    imageUrl: string
+    @Column('text', { nullable: true })
+    imageUrl: string | null
 
     @CreateDateColumn()
     createdAt: Date

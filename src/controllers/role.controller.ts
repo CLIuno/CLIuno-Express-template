@@ -23,6 +23,7 @@ export const RoleController = {
                 status: 'warning',
                 message: 'Role not found',
             })
+            return
         }
         res.status(200).json({
             status: 'success',
@@ -38,6 +39,7 @@ export const RoleController = {
                 status: 'warning',
                 message: 'Role name is required',
             })
+            return
         }
 
         const existingRole = await roleRepository.findOneBy({ name })
@@ -46,6 +48,7 @@ export const RoleController = {
                 status: 'warning',
                 message: 'Role already exists',
             })
+            return
         }
 
         const newRole = roleRepository.create({ name })
@@ -65,6 +68,7 @@ export const RoleController = {
                 status: 'warning',
                 message: 'Role not found',
             })
+            return
         }
 
         if (!role) {
@@ -121,6 +125,7 @@ export const RoleController = {
                 status: 'warning',
                 message: 'Role ID is required',
             })
+            return
         }
 
         const role = await roleRepository.findOneBy({ id: role_id })
@@ -129,6 +134,7 @@ export const RoleController = {
                 status: 'warning',
                 message: 'Role not found',
             })
+            return
         }
 
         const users = await userRepository.find({

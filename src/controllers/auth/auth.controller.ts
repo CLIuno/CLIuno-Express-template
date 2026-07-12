@@ -28,6 +28,7 @@ export const AuthController = {
                     status: 'warning',
                     message: 'Token has already been invalidated',
                 })
+                return
             }
 
             const newBlacklistedToken = new BlacklistedToken()
@@ -61,6 +62,7 @@ export const AuthController = {
                 status: 'warning',
                 message: 'Token has already been invalidated',
             })
+            return
         }
 
         if (!jwtSecret) {
@@ -73,6 +75,7 @@ export const AuthController = {
                     status: 'error',
                     message: 'Invalid token',
                 })
+                return
             }
 
             res.status(200).json({
@@ -94,6 +97,7 @@ export const AuthController = {
                 status: 'warning',
                 message: 'Token has already been invalidated',
             })
+            return
         }
 
         if (!jwtSecret || !refreshJwtSecret) {
@@ -106,6 +110,7 @@ export const AuthController = {
                     status: 'error',
                     message: 'Invalid token',
                 })
+                return
             }
 
             const newToken = jwt.sign({ email: decoded.email }, jwtSecret, {
@@ -135,6 +140,7 @@ export const AuthController = {
                 status: 'warning',
                 message: 'Email is required',
             })
+            return
         }
 
         const user = await myDataSource.getRepository(User).findOneBy({ email })
@@ -144,6 +150,7 @@ export const AuthController = {
                 status: 'error',
                 message: 'User not found',
             })
+            return
         }
 
         generateToken().then((token) => {

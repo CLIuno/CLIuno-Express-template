@@ -11,18 +11,13 @@ router.get('/current', UserController.getCurrent)
 router.patch('/current', UserController.updateCurrent)
 router.delete('/current', UserController.deleteCurrent)
 router.get('/username/:username', UserController.getByUsername)
-router.get('/posts', UserController.getPostsByUserId)
-router.get('/role', UserController.getRolesByUserId)
+router.get('/', UserController.getAll)
 router.get('/:id', UserController.getById)
+router.get('/:id/posts', UserController.getPostsByUserId)
+router.get('/:id/roles', UserController.getRolesByUserId)
 
 // 🔐 Admin Routes
-router.get('/', RoleMiddleware.admin, UserController.getAll)
 router.patch('/:id', RoleMiddleware.admin, UserController.update)
 router.delete('/:id', RoleMiddleware.admin, UserController.delete)
-
-// Catch-all or duplicated handler fix
-router.get('/', (req, res) => {
-    res.status(400).json({ status: 'warning', message: 'Invalid request' })
-})
 
 export default router

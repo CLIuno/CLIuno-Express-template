@@ -99,6 +99,7 @@ export const PostController = {
 
     create: async (req: Request, res: Response): Promise<void> => {
         const { title, content } = req.body
+        const userId = (req as any).user.id
 
         if (!title || !content) {
             res.status(400).json({
@@ -108,7 +109,13 @@ export const PostController = {
             return
         }
 
-        const post = myDataSource.getRepository(Post).create({ title, content })
+        const user = await myDataSource.getRepository(User).findOneBy({ id: userId })
+        if (!user) {
+            res.status(404).json({ status: 'error', message: 'User not found' })
+            return
+        }
+
+        const post = myDataSource.getRepository(Post).create({ title, content, user })
         const result = await myDataSource.getRepository(Post).save(post)
 
         res.status(200).json({
@@ -165,7 +172,7 @@ export const PostController = {
     },
 
     getUserByPostId: async (req: Request, res: Response): Promise<void> => {
-        const { post_id } = req.body
+        const post_id = req.params.post_id as string
 
         if (!post_id) {
             res.status(400).json({

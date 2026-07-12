@@ -25,6 +25,7 @@ export const ResetPasswordController = {
                     status: 'warning',
                     message: 'Email or Username is required',
                 })
+                return
             }
 
             const isEmail = emailValidate(usernameOrEmail)
@@ -37,6 +38,7 @@ export const ResetPasswordController = {
                     status: 'error',
                     message: 'Invalid username/email or password',
                 })
+                return
             }
 
             generateToken().then((token) => {
