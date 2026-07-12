@@ -24,33 +24,33 @@ const __dirname = path.dirname(__filename)
 APP.use(express.json())
 APP.set('trust proxy', 1) // Trust first proxy
 APP.use(
-  session({
-    secret: process.env.SESSION_SECRET || 'very-secret-key',
-    saveUninitialized: false,
-    resave: false,
-    cookie: {
-      maxAge: 86400000,
-      httpOnly: true
-    }
-  })
+    session({
+        secret: process.env.SESSION_SECRET || 'very-secret-key',
+        saveUninitialized: false,
+        resave: false,
+        cookie: {
+            maxAge: 86400000,
+            httpOnly: true,
+        },
+    }),
 )
 
 if (process.env.NODE_ENV === 'development') {
-  APP.use(morgan('dev'))
-  APP.use(
-    cors({
-      origin: '*'
-    })
-  )
+    APP.use(morgan('dev'))
+    APP.use(
+        cors({
+            origin: '*',
+        }),
+    )
 }
 
 if (process.env.NODE_ENV === 'production') {
-  APP.use(helmet())
-  APP.use(
-    cors({
-      origin: process.env.APP_URL
-    })
-  )
+    APP.use(helmet())
+    APP.use(
+        cors({
+            origin: process.env.APP_URL,
+        }),
+    )
 }
 
 APP.use(`/api/${process.env.API_VERSION}`, router)
@@ -60,5 +60,7 @@ APP.get('/', (req, res) => res.sendFile(path.join(__dirname, '../index.html')))
 APP.disable('x-powered-by')
 // Establish database connection and start the server
 initializeDataSource().then(() =>
-  createServer(APP).listen(PORT, () => console.log(`Listening on ${process.env.APP_URL}:${PORT}`))
+    createServer(APP).listen(PORT, () =>
+        console.log(`Listening on ${process.env.APP_URL}:${PORT}`),
+    ),
 )

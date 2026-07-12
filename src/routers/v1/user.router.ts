@@ -22,7 +22,7 @@ router.delete('/:id', RoleMiddleware.admin, UserController.delete)
 
 // Catch-all or duplicated handler fix
 router.get('/', (req, res) => {
-  res.status(400).json({ status: 'warning', message: 'Invalid request' })
+    res.status(400).json({ status: 'warning', message: 'Invalid request' })
 })
 
 export default router

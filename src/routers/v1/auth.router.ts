@@ -33,10 +33,10 @@ router.post('/otp/disable', ensureAuthenticated, OTPController.otpDisable)
 
 // Fallback for invalid requests
 router.get('/', (req, res) => {
-  res.status(400).json({
-    status: 'warning',
-    message: 'Invalid request'
-  })
+    res.status(400).json({
+        status: 'warning',
+        message: 'Invalid request',
+    })
 })
 
 export default router

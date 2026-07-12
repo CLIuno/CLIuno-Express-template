@@ -3,28 +3,21 @@ import {
     Column,
     PrimaryGeneratedColumn,
     ManyToOne,
-    OneToMany,
     JoinColumn,
     CreateDateColumn,
     UpdateDateColumn,
 } from 'typeorm'
 
 import { User } from './user.entity'
-import { Comment } from './comment.entity'
+import { Post } from './post.entity'
 
-@Entity('Posts')
-export class Post {
+@Entity('Comments')
+export class Comment {
     @PrimaryGeneratedColumn('uuid')
     id: string
 
     @Column('text')
-    title: string
-
-    @Column('text')
     content: string
-
-    @Column('text')
-    imageUrl: string
 
     @CreateDateColumn()
     createdAt: Date
@@ -32,13 +25,11 @@ export class Post {
     @UpdateDateColumn()
     updatedAt: Date
 
-    @Column({ type: 'boolean', default: false })
-    is_paid: boolean
-
-    @ManyToOne(() => User, (user) => user.posts, { nullable: false })
+    @ManyToOne(() => User, (user) => user.comments, { nullable: false })
     @JoinColumn({ name: 'user_id' })
     user: User
 
-    @OneToMany(() => Comment, (comment) => comment.post)
-    comments: Comment[]
+    @ManyToOne(() => Post, (post) => post.comments, { nullable: false, onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'post_id' })
+    post: Post
 }

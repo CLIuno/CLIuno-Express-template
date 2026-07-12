@@ -3,28 +3,26 @@ import {
     Column,
     PrimaryGeneratedColumn,
     ManyToOne,
-    OneToMany,
     JoinColumn,
     CreateDateColumn,
     UpdateDateColumn,
 } from 'typeorm'
 
 import { User } from './user.entity'
-import { Comment } from './comment.entity'
 
-@Entity('Posts')
-export class Post {
+@Entity('Todos')
+export class Todo {
     @PrimaryGeneratedColumn('uuid')
     id: string
 
     @Column('text')
     title: string
 
-    @Column('text')
-    content: string
+    @Column('text', { nullable: true })
+    description: string
 
-    @Column('text')
-    imageUrl: string
+    @Column({ type: 'boolean', default: false })
+    is_completed: boolean
 
     @CreateDateColumn()
     createdAt: Date
@@ -32,13 +30,7 @@ export class Post {
     @UpdateDateColumn()
     updatedAt: Date
 
-    @Column({ type: 'boolean', default: false })
-    is_paid: boolean
-
-    @ManyToOne(() => User, (user) => user.posts, { nullable: false })
+    @ManyToOne(() => User, (user) => user.todos, { nullable: false })
     @JoinColumn({ name: 'user_id' })
     user: User
-
-    @OneToMany(() => Comment, (comment) => comment.post)
-    comments: Comment[]
 }

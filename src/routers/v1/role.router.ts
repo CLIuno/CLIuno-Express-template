@@ -20,7 +20,7 @@ router.get('/:role_id/users', RoleController.getUsersByRoleId)
 
 // Fallback for invalid request
 router.get('/', (req, res) => {
-  res.status(400).json({ status: 'warning', message: 'Invalid request' })
+    res.status(400).json({ status: 'warning', message: 'Invalid request' })
 })
 
 export default router

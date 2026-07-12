@@ -1,0 +1,6 @@
+allowBuilds:
+  bcrypt: true
+  better-sqlite3: true
+  bufferutil: true
+  esbuild: true
+  utf-8-validate: true
