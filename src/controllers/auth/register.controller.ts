@@ -48,10 +48,12 @@ export default async function RegisterController(req: Request, res: Response) {
         })
         role ??= await roleRepository.save(roleRepository.create({ name: 'user' }))
 
+        const verifyToken = await generateToken()
         const newUser: any = myDataSource.getRepository(User).create({
             ...req.body,
             password: hashedPassword,
             role: role,
+            verify_token: verifyToken,
             createdAt: new Date(),
             updatedAt: new Date(),
         })
@@ -59,9 +61,7 @@ export default async function RegisterController(req: Request, res: Response) {
         await myDataSource.getRepository(User).save(newUser)
 
         // Send email verification
-        generateToken().then((token) => {
-            sendEmail.verifyEmail(req.body.email, token, newUser.id)
-        })
+        sendEmail.verifyEmail(req.body.email, verifyToken, newUser.id)
 
         res.status(201).json({
             status: 'success',

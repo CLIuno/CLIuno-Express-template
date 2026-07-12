@@ -86,7 +86,8 @@ export const AuthController = {
     },
 
     refreshToken: async (req: Request, res: Response) => {
-        const token = req.headers.authorization?.split(' ')[1]
+        // Frontends send the refresh token in the body; the header is a fallback
+        const token = req.body?.refreshToken ?? req.headers.authorization?.split(' ')[1]
 
         const blacklistedToken = await myDataSource
             .getRepository(BlacklistedToken)
@@ -113,11 +114,12 @@ export const AuthController = {
                 return
             }
 
-            const newToken = jwt.sign({ email: decoded.email }, jwtSecret, {
+            const payload = { id: decoded.id, username: decoded.username, email: decoded.email }
+            const newToken = jwt.sign(payload, jwtSecret, {
                 expiresIn: '1h',
             })
 
-            const newRefreshToken = jwt.sign({ email: decoded.email }, refreshJwtSecret, {
+            const newRefreshToken = jwt.sign(payload, refreshJwtSecret, {
                 expiresIn: '7d',
             })
 
@@ -157,9 +159,10 @@ export const AuthController = {
             return
         }
 
-        generateToken().then((token) => {
-            sendEmail.verifyEmail(user!.email, token, user!.id)
-        })
+        const verifyToken = await generateToken()
+        user.verify_token = verifyToken
+        await myDataSource.getRepository(User).save(user)
+        sendEmail.verifyEmail(user.email, verifyToken, user.id)
 
         res.status(200).json({
             status: 'success',
@@ -169,69 +172,53 @@ export const AuthController = {
 
     verifyEmail: async (req: Request, res: Response) => {
         try {
-            const { user_id, token } = req.body
+            const { token } = req.body
 
             const userRepo = myDataSource.getRepository(User)
-            const blacklistRepo = myDataSource.getRepository(BlacklistedToken)
+            const user = token ? await userRepo.findOneBy({ verify_token: token }) : null
 
-            const user = await userRepo.findOneBy({ id: user_id })
-
-            if (user) {
-                const blacklistedToken = await blacklistRepo.findOne({
-                    where: { token },
-                })
-
-                if (blacklistedToken) {
-                    res.status(401).json({
-                        status: 'warning',
-                        message: 'Token has already been invalidated',
-                    })
-                } else {
-                    const newBlacklistedToken = new BlacklistedToken()
-                    newBlacklistedToken.token = token
-                    newBlacklistedToken.invalidatedAt = new Date()
-                    await blacklistRepo.save(newBlacklistedToken)
-
-                    user.is_verified = true
-
-                    const newToken = jwt.sign(
-                        {
-                            id: user.id,
-                            username: user.username,
-                            email: user.email,
-                        },
-                        jwtSecret!,
-                        { expiresIn: '1h' },
-                    )
-
-                    const newRefreshToken = jwt.sign(
-                        {
-                            id: user.id,
-                            username: user.username,
-                            email: user.email,
-                        },
-                        refreshJwtSecret!,
-                        { expiresIn: '7d' },
-                    )
-
-                    user.refresh_token = newRefreshToken
-                    await userRepo.save(user)
-
-                    res.status(200).json({
-                        status: 'success',
-                        message: 'Email verified successfully',
-                        data: {
-                            token: newToken,
-                            refreshToken: newRefreshToken,
-                        },
-                    })
-                }
-            } else {
+            if (!user) {
                 res.status(400).json({
                     status: 'error',
-                    message: 'User does not exist',
+                    message: 'Invalid or expired verification token',
                 })
+                return
             }
+
+            user.is_verified = true
+            user.verify_token = null
+
+            const newToken = jwt.sign(
+                {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                },
+                jwtSecret!,
+                { expiresIn: '1h' },
+            )
+
+            const newRefreshToken = jwt.sign(
+                {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                },
+                refreshJwtSecret!,
+                { expiresIn: '7d' },
+            )
+
+            user.refresh_token = newRefreshToken
+            await userRepo.save(user)
+
+            res.status(200).json({
+                status: 'success',
+                message: 'Email verified successfully',
+                data: {
+                    token: newToken,
+                    refreshToken: newRefreshToken,
+                },
+            })
         } catch (error: any) {
             logThisError(error)
             res.status(error.statusCode || 500).json({

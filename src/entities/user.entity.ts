@@ -71,6 +71,14 @@ export class User {
 
     @Column('text', { nullable: true })
     @Exclude()
+    reset_token: string | null
+
+    @Column('text', { nullable: true })
+    @Exclude()
+    verify_token: string | null
+
+    @Column('text', { nullable: true })
+    @Exclude()
     refresh_token: string
 
     @Column({ type: 'boolean', default: false })

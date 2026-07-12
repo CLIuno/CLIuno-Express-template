@@ -3,7 +3,6 @@ import dotenv from 'dotenv'
 import { Request, Response } from 'express'
 
 import { myDataSource } from '@/database/app-data-source'
-import { BlacklistedToken } from '@/entities/blacklistedToken.entity'
 import { User } from '@/entities/user.entity'
 import { sendEmail } from '@/helpers/email-sender'
 import logThisError from '@/helpers/error-logger'
@@ -42,9 +41,10 @@ export const ResetPasswordController = {
                 return
             }
 
-            generateToken().then((token) => {
-                sendEmail.resetPassword(user!.email, token, user!.id)
-            })
+            const token = await generateToken()
+            user.reset_token = token
+            await myDataSource.getRepository(User).save(user)
+            sendEmail.resetPassword(user.email, token, user.id)
 
             res.status(200).json({
                 status: 'success',
@@ -63,43 +63,27 @@ export const ResetPasswordController = {
         try {
             await ValidateResetPassword(req)
 
-            const { user_id, token, password } = req.body
+            const { token, password } = req.body
 
             const userRepo = myDataSource.getRepository(User)
-            const blacklistRepo = myDataSource.getRepository(BlacklistedToken)
+            const user = token ? await userRepo.findOneBy({ reset_token: token }) : null
 
-            const user = await userRepo.findOneBy({ id: user_id })
-
-            if (user) {
-                const blacklistedToken = await blacklistRepo.findOne({
-                    where: { token },
-                })
-
-                if (blacklistedToken) {
-                    res.status(401).json({
-                        status: 'warning',
-                        message: 'Token has already been invalidated',
-                    })
-                } else {
-                    const newBlacklistedToken = new BlacklistedToken()
-                    newBlacklistedToken.token = token
-                    newBlacklistedToken.invalidatedAt = new Date()
-                    await blacklistRepo.save(newBlacklistedToken)
-
-                    user.password = await bcrypt.hash(password, saltRounds)
-                    await userRepo.save(user)
-
-                    res.status(200).json({
-                        status: 'success',
-                        message: 'Password reset successful',
-                    })
-                }
-            } else {
+            if (!user) {
                 res.status(400).json({
                     status: 'error',
-                    message: 'User does not exist',
+                    message: 'Invalid or expired reset token',
                 })
+                return
             }
+
+            user.password = await bcrypt.hash(password, saltRounds)
+            user.reset_token = null
+            await userRepo.save(user)
+
+            res.status(200).json({
+                status: 'success',
+                message: 'Password reset successful',
+            })
         } catch (error: any) {
             logThisError(error)
             res.status(error.statusCode || 500).json({
@@ -113,25 +97,36 @@ export const ResetPasswordController = {
         try {
             await ValidateChangePassword(req)
 
-            const { user_id, password } = req.body
+            const { oldPassword, newPassword } = req.body
+            const userId = (req as any).user.id
 
             const userRepo = myDataSource.getRepository(User)
-            const user = await userRepo.findOneBy({ id: user_id })
+            const user = await userRepo.findOneBy({ id: userId })
 
-            if (user) {
-                user.password = await bcrypt.hash(password, saltRounds)
-                await userRepo.save(user)
-
-                res.status(200).json({
-                    status: 'success',
-                    message: 'Password changed successfully',
-                })
-            } else {
-                res.status(400).json({
+            if (!user) {
+                res.status(404).json({
                     status: 'error',
                     message: 'User does not exist',
                 })
+                return
             }
+
+            const matches = await bcrypt.compare(oldPassword, user.password)
+            if (!matches) {
+                res.status(400).json({
+                    status: 'error',
+                    message: 'Current password is incorrect',
+                })
+                return
+            }
+
+            user.password = await bcrypt.hash(newPassword, saltRounds)
+            await userRepo.save(user)
+
+            res.status(200).json({
+                status: 'success',
+                message: 'Password changed successfully',
+            })
         } catch (error: any) {
             logThisError(error)
             res.status(error.statusCode || 500).json({
