@@ -18,7 +18,8 @@ dotenv.config()
 export const ResetPasswordController = {
     forgotPassword: async (req: Request, res: Response) => {
         try {
-            const { usernameOrEmail } = req.body
+            // Frontends send `email`; `usernameOrEmail` is kept for compatibility
+            const usernameOrEmail = req.body?.email || req.body?.usernameOrEmail
 
             if (!usernameOrEmail) {
                 res.status(400).json({

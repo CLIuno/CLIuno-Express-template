@@ -133,9 +133,11 @@ export const AuthController = {
     },
 
     sendVerifyEmail: async (req: Request, res: Response) => {
-        const { email } = req.body
+        // Authenticated requests derive the target user; `email` is a fallback.
+        const authId = (req as any).user?.id
+        const email = req.body?.email
 
-        if (!req.body || !email) {
+        if (!authId && !email) {
             res.status(400).json({
                 status: 'warning',
                 message: 'Email is required',
@@ -143,7 +145,9 @@ export const AuthController = {
             return
         }
 
-        const user = await myDataSource.getRepository(User).findOneBy({ email })
+        const user = await myDataSource
+            .getRepository(User)
+            .findOneBy(authId ? { id: authId } : { email })
 
         if (!user) {
             res.status(404).json({
@@ -154,7 +158,7 @@ export const AuthController = {
         }
 
         generateToken().then((token) => {
-            sendEmail.verifyEmail(email, token, user!.id)
+            sendEmail.verifyEmail(user!.email, token, user!.id)
         })
 
         res.status(200).json({

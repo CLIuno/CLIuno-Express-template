@@ -10,23 +10,35 @@ import { emailValidate } from '@/helpers/email-validator'
 
 dotenv.config()
 
+// Resolve the acting user: authenticated requests win, `usernameOrEmail` is a fallback.
+const resolveUser = async (req: Request): Promise<User | null> => {
+    const authId = (req as any).user?.id
+    if (authId) {
+        return myDataSource.getRepository(User).findOneBy({ id: authId })
+    }
+
+    const { usernameOrEmail } = req.body ?? {}
+    if (!usernameOrEmail) return null
+
+    const isEmail = emailValidate(usernameOrEmail)
+    return myDataSource
+        .getRepository(User)
+        .findOneBy(isEmail ? { email: usernameOrEmail } : { username: usernameOrEmail })
+}
+
+const buildTotp = (user: User, secret: string) =>
+    new OTPAuth.TOTP({
+        issuer: process.env.FRONTEND_URL || 'CLIuno',
+        label: user.username,
+        algorithm: 'SHA1',
+        digits: 6,
+        secret,
+    })
+
 export const OTPController = {
     otpGenerate: async (req: Request, res: Response): Promise<void> => {
         try {
-            const { usernameOrEmail } = req.body
-            if (!usernameOrEmail) {
-                res.status(400).json({
-                    status: 'error',
-                    message: 'usernameOrEmail is required',
-                })
-                return
-            }
-
-            const isEmail = emailValidate(usernameOrEmail)
-            const user = await myDataSource
-                .getRepository(User)
-                .findOneBy(isEmail ? { email: usernameOrEmail } : { username: usernameOrEmail })
-
+            const user = await resolveUser(req)
             if (!user) {
                 res.status(404).json({
                     status: 'error',
@@ -36,15 +48,7 @@ export const OTPController = {
             }
 
             const base32_secret = generateBase32Secret()
-            const totp = new OTPAuth.TOTP({
-                issuer: process.env.FRONTEND_URL!,
-                label: user.username,
-                algorithm: 'SHA1',
-                digits: 6,
-                secret: base32_secret,
-            })
-
-            const otpauth_url = totp.toString()
+            const otpauth_url = buildTotp(user, base32_secret).toString()
 
             user.otp_auth_url = otpauth_url
             user.otp_base32 = base32_secret
@@ -52,8 +56,8 @@ export const OTPController = {
 
             res.status(200).json({
                 status: 'success',
-                base32: base32_secret,
-                otpauth_url,
+                message: 'OTP secret generated',
+                data: { secret: base32_secret, base32: base32_secret, otpauth_url },
             })
         } catch (error) {
             console.error(error)
@@ -66,20 +70,7 @@ export const OTPController = {
 
     otpDisable: async (req: Request, res: Response): Promise<void> => {
         try {
-            const { usernameOrEmail } = req.body
-            if (!usernameOrEmail) {
-                res.status(400).json({
-                    status: 'error',
-                    message: 'usernameOrEmail is required',
-                })
-                return
-            }
-
-            const isEmail = emailValidate(usernameOrEmail)
-            const user = await myDataSource
-                .getRepository(User)
-                .findOneBy(isEmail ? { email: usernameOrEmail } : { username: usernameOrEmail })
-
+            const user = await resolveUser(req)
             if (!user) {
                 res.status(404).json({
                     status: 'error',
@@ -89,6 +80,8 @@ export const OTPController = {
             }
 
             user.is_otp_enabled = false
+            user.otp_base32 = null as any
+            user.otp_auth_url = null as any
             await myDataSource.getRepository(User).save(user)
 
             res.status(200).json({
@@ -106,20 +99,7 @@ export const OTPController = {
 
     otpVerify: async (req: Request, res: Response): Promise<void> => {
         try {
-            const { usernameOrEmail, token } = req.body
-            if (!usernameOrEmail) {
-                res.status(400).json({
-                    status: 'error',
-                    message: 'usernameOrEmail is required',
-                })
-                return
-            }
-
-            const isEmail = emailValidate(usernameOrEmail)
-            const user = await myDataSource
-                .getRepository(User)
-                .findOneBy(isEmail ? { email: usernameOrEmail } : { username: usernameOrEmail })
-
+            const user = await resolveUser(req)
             if (!user) {
                 res.status(404).json({
                     status: 'error',
@@ -128,15 +108,16 @@ export const OTPController = {
                 return
             }
 
-            const totp = new OTPAuth.TOTP({
-                issuer: process.env.FRONTEND_URL!,
-                label: user.username,
-                algorithm: 'SHA1',
-                digits: 6,
-                secret: user.otp_base32!,
-            })
+            if (!user.otp_base32) {
+                res.status(400).json({
+                    status: 'error',
+                    message: 'OTP is not set up',
+                })
+                return
+            }
 
-            const delta = totp.validate({ token })
+            const code = req.body?.otp ?? req.body?.token
+            const delta = buildTotp(user, user.otp_base32).validate({ token: String(code ?? '') })
             if (delta === null) {
                 res.status(401).json({
                     status: 'error',
@@ -164,20 +145,7 @@ export const OTPController = {
 
     otpValidate: async (req: Request, res: Response): Promise<void> => {
         try {
-            const { usernameOrEmail, token } = req.body
-            if (!usernameOrEmail) {
-                res.status(400).json({
-                    status: 'error',
-                    message: 'usernameOrEmail is required',
-                })
-                return
-            }
-
-            const isEmail = emailValidate(usernameOrEmail)
-            const user = await myDataSource
-                .getRepository(User)
-                .findOneBy(isEmail ? { email: usernameOrEmail } : { username: usernameOrEmail })
-
+            const user = await resolveUser(req)
             if (!user) {
                 res.status(404).json({
                     status: 'error',
@@ -186,7 +154,7 @@ export const OTPController = {
                 return
             }
 
-            if (!user.is_otp_enabled) {
+            if (!user.is_otp_enabled || !user.otp_base32) {
                 res.status(400).json({
                     status: 'error',
                     message: 'OTP is not enabled for this user',
@@ -194,15 +162,11 @@ export const OTPController = {
                 return
             }
 
-            const totp = new OTPAuth.TOTP({
-                issuer: process.env.FRONTEND_URL!,
-                label: user.username,
-                algorithm: 'SHA1',
-                digits: 6,
-                secret: user.otp_base32!,
+            const code = req.body?.otp ?? req.body?.token
+            const delta = buildTotp(user, user.otp_base32).validate({
+                token: String(code ?? ''),
+                window: 1,
             })
-
-            const delta = totp.validate({ token, window: 1 })
             if (delta === null) {
                 res.status(401).json({
                     status: 'error',
