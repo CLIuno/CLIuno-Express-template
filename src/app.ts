@@ -11,6 +11,7 @@ import morgan from 'morgan'
 
 import 'module-alias/register'
 import { initializeDataSource } from '@/database/app-data-source'
+import { ensureUploadDir } from '@/helpers/upload'
 import router from '@/routers'
 
 dotenv.config()
@@ -55,6 +56,8 @@ if (process.env.NODE_ENV === 'production') {
 
 APP.use(`/api/${process.env.API_VERSION}`, router)
 APP.use('/public', express.static(path.join(__dirname, '../public')))
+// Uploaded images are public and unversioned — no /api/v1 prefix.
+APP.use('/uploads', express.static(ensureUploadDir()))
 APP.get('/', (req, res) => res.sendFile(path.join(__dirname, '../index.html')))
 
 APP.disable('x-powered-by')

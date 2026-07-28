@@ -6,6 +6,7 @@ import roleRouter from './v1/role.router'
 import userRouter from './v1/user.router'
 import todoRouter from './v1/todo.router'
 import followRouter from './v1/follow.router'
+import uploadRouter from './v1/upload.router'
 
 // Create a new router instance
 const router: Router = Router()
@@ -27,6 +28,9 @@ router.use('/todos', todoRouter)
 
 // Follow Router
 router.use('/follows', followRouter)
+
+// Upload Router
+router.use('/uploads', uploadRouter)
 
 // Export the main router
 export default router

@@ -26,3 +26,7 @@ db.sqlite
 *.njsproj
 *.sln
 *.sw?
+
+# uploaded images
+uploads/*
+!uploads/.gitkeep

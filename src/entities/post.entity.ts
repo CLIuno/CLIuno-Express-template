@@ -24,7 +24,7 @@ export class Post {
     content: string
 
     @Column('text', { nullable: true })
-    imageUrl: string | null
+    image_url: string | null
 
     @CreateDateColumn()
     createdAt: Date

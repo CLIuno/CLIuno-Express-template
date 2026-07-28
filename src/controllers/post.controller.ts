@@ -99,6 +99,8 @@ export const PostController = {
 
     create: async (req: Request, res: Response): Promise<void> => {
         const { title, content } = req.body
+        // frontends may send either casing; image_url is what goes back out
+        const image_url = req.body.image_url ?? req.body.imageUrl ?? null
         const userId = (req as any).user.id
 
         if (!title || !content) {
@@ -115,7 +117,7 @@ export const PostController = {
             return
         }
 
-        const post = myDataSource.getRepository(Post).create({ title, content, user })
+        const post = myDataSource.getRepository(Post).create({ title, content, image_url, user })
         const result = await myDataSource.getRepository(Post).save(post)
 
         res.status(200).json({
@@ -138,7 +140,10 @@ export const PostController = {
             return
         }
 
-        myDataSource.getRepository(Post).merge(post, req.body)
+        const { imageUrl, ...body } = req.body
+        myDataSource
+            .getRepository(Post)
+            .merge(post, imageUrl === undefined ? body : { ...body, image_url: imageUrl })
         await myDataSource.getRepository(Post).save(post)
 
         res.status(200).json({

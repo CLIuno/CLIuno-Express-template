@@ -39,6 +39,9 @@ export class User {
     @Column('text', { nullable: true })
     nationality: string
 
+    @Column('text', { nullable: true })
+    avatar_url: string | null
+
     @Column('text', { unique: true })
     phone: string
 
