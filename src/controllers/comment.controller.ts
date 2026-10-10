@@ -11,7 +11,7 @@ export const CommentController = {
         try {
             const comments = await myDataSource.getRepository(Comment).find({
                 where: { post: { id: req.params.post_id as string } },
-                relations: ['user'],
+                relations: { user: true },
                 order: { createdAt: 'DESC' },
             })
             res.status(200).json({
@@ -67,7 +67,7 @@ export const CommentController = {
             const userId = (req as any).user.id
             const comment = await myDataSource.getRepository(Comment).findOne({
                 where: { id: req.params.id as string },
-                relations: ['user'],
+                relations: { user: true },
             })
 
             if (!comment) {
@@ -101,7 +101,7 @@ export const CommentController = {
             const userId = (req as any).user.id
             const comment = await myDataSource.getRepository(Comment).findOne({
                 where: { id: req.params.id as string },
-                relations: ['user'],
+                relations: { user: true },
             })
 
             if (!comment) {

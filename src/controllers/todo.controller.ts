@@ -9,7 +9,7 @@ export const TodoController = {
     getAll: async (req: Request, res: Response): Promise<void> => {
         try {
             const todos = await myDataSource.getRepository(Todo).find({
-                relations: ['user'],
+                relations: { user: true },
                 order: { createdAt: 'DESC' },
             })
             res.status(200).json({
@@ -27,7 +27,7 @@ export const TodoController = {
         try {
             const todo = await myDataSource.getRepository(Todo).findOne({
                 where: { id: req.params.id as string },
-                relations: ['user'],
+                relations: { user: true },
             })
             if (!todo) {
                 res.status(404).json({ status: 'error', message: 'Todo not found' })
@@ -49,7 +49,7 @@ export const TodoController = {
             const userId = (req as any).user.id
             const todos = await myDataSource.getRepository(Todo).find({
                 where: { user: { id: userId } },
-                relations: ['user'],
+                relations: { user: true },
                 order: { createdAt: 'DESC' },
             })
             res.status(200).json({
@@ -102,7 +102,7 @@ export const TodoController = {
             const userId = (req as any).user.id
             const todo = await myDataSource.getRepository(Todo).findOne({
                 where: { id: req.params.id as string },
-                relations: ['user'],
+                relations: { user: true },
             })
 
             if (!todo) {
@@ -140,7 +140,7 @@ export const TodoController = {
             const userId = (req as any).user.id
             const todo = await myDataSource.getRepository(Todo).findOne({
                 where: { id: req.params.id as string },
-                relations: ['user'],
+                relations: { user: true },
             })
 
             if (!todo) {
@@ -169,7 +169,7 @@ export const TodoController = {
             const userId = (req as any).user.id
             const todo = await myDataSource.getRepository(Todo).findOne({
                 where: { id: req.params.id as string },
-                relations: ['user'],
+                relations: { user: true },
             })
 
             if (!todo) {

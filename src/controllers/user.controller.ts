@@ -257,7 +257,7 @@ export const UserController = {
 
             const posts = await myDataSource.getRepository(Post).find({
                 where: { user: { id: userId } },
-                relations: ['user'],
+                relations: { user: true },
             })
 
             res.status(200).json({
@@ -288,7 +288,7 @@ export const UserController = {
         try {
             const user = await myDataSource.getRepository(User).findOne({
                 where: { id: userId },
-                relations: ['role'],
+                relations: { role: true },
             })
             if (!user) {
                 res.status(404).json({

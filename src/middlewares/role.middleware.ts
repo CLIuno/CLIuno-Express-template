@@ -17,7 +17,7 @@ export const RoleMiddleware = {
                 const userRepository = myDataSource.getRepository(User)
                 const user: any = await userRepository.findOne({
                     where: { id: (req as any).user.id },
-                    relations: ['role'],
+                    relations: { role: true },
                 })
 
                 if (!user) {

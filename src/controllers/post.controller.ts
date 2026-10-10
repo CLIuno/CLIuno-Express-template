@@ -66,7 +66,7 @@ export const PostController = {
 
     getAll: async (req: Request, res: Response): Promise<void> => {
         const posts = await myDataSource.getRepository(Post).find({
-            relations: ['user', 'comments', 'comments.user'],
+            relations: { user: true, comments: { user: true } },
             order: { createdAt: 'DESC' },
         })
         res.status(200).json({
@@ -79,7 +79,7 @@ export const PostController = {
     getById: async (req: Request, res: Response): Promise<void> => {
         const post = await myDataSource.getRepository(Post).findOne({
             where: { id: req.params.id as string },
-            relations: ['user', 'comments', 'comments.user'],
+            relations: { user: true, comments: { user: true } },
         })
 
         if (!post) {
@@ -189,7 +189,7 @@ export const PostController = {
 
         const post = await myDataSource.getRepository(Post).findOne({
             where: { id: post_id },
-            relations: ['user'],
+            relations: { user: true },
         })
 
         if (!post) {
