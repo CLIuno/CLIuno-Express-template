@@ -70,7 +70,7 @@ export const FollowController = {
             const userId = req.params.user_id as string
             const follows = await myDataSource.getRepository(Follow).find({
                 where: { following: { id: userId } },
-                relations: ['follower'],
+                relations: { follower: true },
             })
             const followers = follows.map((f) => f.follower)
             res.status(200).json({
@@ -89,7 +89,7 @@ export const FollowController = {
             const userId = req.params.user_id as string
             const follows = await myDataSource.getRepository(Follow).find({
                 where: { follower: { id: userId } },
-                relations: ['following'],
+                relations: { following: true },
             })
             const following = follows.map((f) => f.following)
             res.status(200).json({
