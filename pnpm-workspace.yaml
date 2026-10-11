@@ -6,3 +6,14 @@ allowBuilds:
   esbuild: true
   unrs-resolver: true
   utf-8-validate: true
+
+# Security floors for transitive dev-only packages (Dependabot can't bump these itself):
+# - esbuild: tsup 8.5.1, the latest, still asks for ^0.27.
+# - postcss: only an optional peer of tsup's postcss-load-config; the floor keeps it
+#   off vulnerable versions if it is ever installed.
+# - argparse: js-yaml 3 (jest coverage via @istanbuljs/load-nyc-config) only loads it in
+#   its CLI; argparse 2 drops sprintf-js, which has no patched release.
+overrides:
+  esbuild: ^0.28.1
+  postcss: ^8.5.23
+  'js-yaml@3>argparse': ^2.0.1
