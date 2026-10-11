@@ -9,8 +9,8 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Copy pnpm-lock.yaml
-COPY pnpm-lock.yaml ./
+# Copy pnpm-lock.yaml and pnpm-workspace.yaml (build approvals + dependency overrides)
+COPY pnpm-lock.yaml pnpm-workspace.yaml ./
 
 # Install dependencies
 RUN pnpm install
