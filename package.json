@@ -25,14 +25,14 @@
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "better-sqlite3": "^12.8.0",
+    "better-sqlite3": "^13.0.3",
     "body-parser": "^2.3.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "cors": "^2.8.6",
     "date-fns": "^4.4.0",
-    "dotenv": "^18.0.6",
-    "express": "^5.2.1",
+    "dotenv": "^18.0.7",
+    "express": "^5.3.0",
     "express-rate-limit": "^8.7.1",
     "express-session": "^1.19.0",
     "express-validator": "^7.3.2",
@@ -43,11 +43,11 @@
     "module-alias": "^2.3.4",
     "morgan": "^1.12.1",
     "multer": "^2.4.0",
-    "nodemailer": "^10.0.16",
+    "nodemailer": "^10.1.0",
     "otpauth": "^9.5.2",
     "reflect-metadata": "^0.2.2",
     "typeorm": "^1.1.2",
-    "uuid": "^14.0.2"
+    "uuid": "^14.0.3"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
@@ -65,7 +65,7 @@
     "@types/module-alias": "^2.0.4",
     "@types/morgan": "^1.9.10",
     "@types/multer": "^2.3.0",
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.5",
     "@types/nodemailer": "^8.0.2",
     "husky": "^9.1.7",
     "jest": "^30.5.2",
@@ -73,12 +73,12 @@
     "nodemon": "^3.1.14",
     "oxfmt": "^0.72.0",
     "oxlint": "^1.87.0",
-    "prettier": "^3.9.9",
+    "prettier": "^3.9.10",
     "tailwindcss": "^4.3.3",
     "ts-jest": "^29.4.14",
     "tsup": "^8.5.1",
     "tsx": "^4.23.15",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   },
   "_moduleAliases": {
     "@": "src"
